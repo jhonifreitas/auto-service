@@ -1,0 +1,32 @@
+# Application
+
+Django==2.2.10
+Pillow
+psycopg2==2.7.7
+psycopg2-binary==2.7.7
+static3
+gunicorn
+dj-database-url
+dj-static
+python-decouple
+django-widget-tweaks
+django-extensions
+django-storages
+django-cleanup
+boto3
+requests
+pytz
+
+# Django Admin
+https://github.com/andrewyager/django-suit/tarball/andrewyager-patch-1
+
+# Auditlog
+git+https://github.com/cosmunsoftwares/django-auditlog.git
+
+# BACKUP
+django-dbbackup
+
+# Django Rest Framework
+djangorestframework
+itsdangerous
+django-cors-headers

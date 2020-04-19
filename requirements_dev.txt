@@ -1,0 +1,13 @@
+-r requirements.txt
+
+coverage
+django-coverage
+mock
+model-mommy
+flake8
+vcrpy
+pre-commit
+
+# Django Tests
+django-test-without-migrations
+ipython

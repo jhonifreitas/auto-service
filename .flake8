@@ -1,0 +1,29 @@
+[flake8]
+exclude =
+    env/*
+    wsgi.py
+    .git,
+    *migrations*
+    *.pre-commit-config.*
+    *.flake8*
+    README.md
+    requirements*
+    .gitlab-ci.yml
+    *fixtures*
+    *locale/*
+    .gitignore
+    *.html
+    *.yaml
+    Procfile
+    *.css*
+    *.scss*
+    *.js*
+    *.png
+    *.json
+    *.txt
+    *.markdown
+    *.coveragerc
+    *LICENSE*
+    *contrib/*
+max-line-length = 119
+format = pylint
