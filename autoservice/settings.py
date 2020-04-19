@@ -58,7 +58,7 @@ EXTRA_APPS = [
 ]
 
 PROJECT_APPS = [
-    'autoservice.custom_profile.apps.CustomProfileConfig',
+    'autoservice.customer.apps.CustomerConfig',
 ]
 
 INSTALLED_APPS += EXTRA_APPS

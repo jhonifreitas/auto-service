@@ -5,7 +5,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer
 
 from django.conf import settings
 
-from autoservice.custom_profile import models
+from autoservice.customer import models
 
 
 class LoginSerializer(serializers.Serializer):

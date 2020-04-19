@@ -3,6 +3,8 @@ from django.shortcuts import redirect
 from django.utils.safestring import mark_safe
 from django.contrib.admin.widgets import AdminFileWidget
 
+from autoservice.core import models
+
 
 class AdminImageWidget(AdminFileWidget):
     def render(self, name, value, attrs=None, renderer=None):
@@ -33,3 +35,28 @@ def redirect_one_object(model, obj):
 
 def thumbnail(obj, size='col-md-2'):
     return mark_safe('<img src="{}" class="img-thumbnail {} p-0">'.format(obj.url, size))
+
+
+@admin.register(models.City)
+class CityAdmin(admin.ModelAdmin):
+
+    list_display = ['id', 'name', 'state', 'updated_at', 'created_at']
+    list_display_links = ['id', 'name']
+
+
+@admin.register(models.State)
+class StateAdmin(admin.ModelAdmin):
+
+    list_display = ['id', 'name', 'uf', 'updated_at', 'created_at']
+    list_display_links = ['id', 'name']
+
+
+@admin.register(models.Service)
+class ServiceAdmin(admin.ModelAdmin):
+
+    list_display = ['id', 'name', 'get_icon', 'updated_at', 'created_at']
+    list_display_links = ['id', 'name']
+
+    def get_icon(self, obj):
+        return thumbnail(obj.icon)
+    get_icon.short_description = 'Icone'
