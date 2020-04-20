@@ -38,3 +38,29 @@ class ServiceViewSet(viewsets.ViewSet):
         context = {'request': request}
         return Response(self.serializer_class(
             self.get_queryset(), many=True, context=context).data, status=status.HTTP_200_OK)
+
+
+class WeekViewSet(viewsets.ViewSet):
+
+    serializer_class = serializers.WeekSerializerRetrieve
+
+    def get_queryset(self):
+        return self.serializer_class.Meta.model.objects.all()
+
+    def list(self, request):
+        context = {'request': request}
+        return Response(self.serializer_class(
+            self.get_queryset(), many=True, context=context).data, status=status.HTTP_200_OK)
+
+
+class TypePayViewSet(viewsets.ViewSet):
+
+    serializer_class = serializers.TypePaySerializerRetrieve
+
+    def get_queryset(self):
+        return self.serializer_class.Meta.model.objects.all()
+
+    def list(self, request):
+        context = {'request': request}
+        return Response(self.serializer_class(
+            self.get_queryset(), many=True, context=context).data, status=status.HTTP_200_OK)

@@ -68,11 +68,24 @@ class Week(AbstractBaseModel):
     class Meta:
         verbose_name = 'Dia da Semana'
         verbose_name_plural = 'Dias da Semana'
-        ordering = ['name']
+        ordering = ['created_at']
 
     name = models.CharField(verbose_name='Nome', max_length=255)
 
 
+class TypePay(AbstractBaseModel):
+
+    class Meta:
+        verbose_name = 'Tipo de pagamento'
+        verbose_name_plural = 'Tipos de pagamento'
+        ordering = ['order']
+
+    name = models.CharField(verbose_name='Nome', max_length=255)
+    order = models.PositiveIntegerField(verbose_name='Ordem', default=0)
+
+
 auditlog.register(City)
+auditlog.register(Week)
 auditlog.register(State)
 auditlog.register(Service)
+auditlog.register(TypePay)

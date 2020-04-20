@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from autoservice.core.utils import Phone
 from autoservice.storage import get_storage_path
-from autoservice.core.models import AbstractBaseModel, City, Service, Week
+from autoservice.core.models import AbstractBaseModel, City, Service, Week, TypePay
 
 
 def get_profile_file_path(instance, filename):
@@ -56,24 +56,15 @@ class AutonomousService(AbstractBaseModel):
         verbose_name = 'Serviço do perfil'
         verbose_name_plural = 'Serviços do perfil'
 
-    PER_HOUR = 'per_hour'
-    PER_JOB = 'per_job'
-    TO_MATCH = 'to_match'
-
-    TYPES_PAY = [
-        (PER_HOUR, 'R$/Hora'),
-        (PER_JOB, 'R$/Trabalho'),
-        (TO_MATCH, 'A Combinar'),
-    ]
-
-    service = models.ForeignKey(Service, verbose_name='Serviço', on_delete=models.CASCADE,
-                                related_name='autonomous_services')
     autonomous = models.ForeignKey(Autonomous, verbose_name='Perfil', on_delete=models.CASCADE,
                                    related_name='autonomous_services')
+    service = models.ForeignKey(Service, verbose_name='Serviço', on_delete=models.CASCADE,
+                                related_name='autonomous_services')
     week = models.ManyToManyField(Week, verbose_name='Dias da Semana', related_name='autonomous_services')
     start_hour = models.TimeField(verbose_name='Horário Inicial')
     end_hour = models.TimeField(verbose_name='Horário Final')
-    type_pay = models.CharField(verbose_name='Tipo de Pagamento', choices=TYPES_PAY, max_length=255)
+    type_pay = models.ForeignKey(TypePay, verbose_name='Tipo de Pagamento', on_delete=models.CASCADE,
+                                 related_name='autonomous_services')
     price = models.DecimalField(verbose_name='Preço', max_digits=12, decimal_places=2, null=True, blank=True)
 
 

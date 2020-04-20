@@ -1,11 +1,12 @@
 from base64 import b64encode
-
 from rest_framework import serializers
 from itsdangerous import TimedJSONWebSignatureSerializer
 
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from autoservice.customer import models
+from autoservice.api.v1.customer.serializers import ProfileSerializerRetrieve, AutonomousSerializerRetrieve
 
 
 class LoginSerializer(serializers.Serializer):
@@ -15,10 +16,10 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, data):
         try:
-            self.profile = models.Profile.objects.get(user__username=data.get('username'))
-            if not self.profile.user.check_password(data.get('password')):
+            self.user = User.objects.get(username=data.get('username'))
+            if not self.user.check_password(data.get('password')):
                 raise serializers.ValidationError('Usuário ou senha não conferem.', code='invalid')
-        except models.Profile.DoesNotExist:
+        except User.DoesNotExist:
             raise serializers.ValidationError('Usuário ou senha não conferem.', code='invalid')
 
         return data
@@ -32,24 +33,12 @@ class LoginSerializer(serializers.Serializer):
     def get_data(self, request):
         context = {'request': request}
         data = {
-            'token': self.get_token(),
-            'profile': ProfileSerializerRetrieve(
-                models.Profile.objects.get(id=self.profile.pk), context=context).data
+            'token': self.get_token()
         }
+        if hasattr(self.user, 'profile'):
+            data['profile'] = ProfileSerializerRetrieve(
+                models.Profile.objects.get(id=self.user.profile.pk), context=context).data
+        if hasattr(self.user, 'autonomous'):
+            data['autonomous'] = AutonomousSerializerRetrieve(
+                models.Autonomous.objects.get(id=self.user.autonomous.pk), context=context).data
         return data
-
-
-class ProfileSerializerRetrieve(serializers.ModelSerializer):
-
-    name = serializers.SerializerMethodField()
-    email = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.Profile
-        fields = ['name', 'email']
-
-    def get_name(self, obj):
-        return obj.user.get_full_name()
-
-    def get_email(self, obj):
-        return obj.user.email
