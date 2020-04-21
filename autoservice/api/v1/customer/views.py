@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.exceptions import MethodNotAllowed
 
 from django.shortcuts import get_object_or_404
 
@@ -94,6 +95,38 @@ class AutonomousServiceViewSet(viewsets.ModelViewSet):
     def update(self, request, pk):
         data = request.data.copy()
         data.update({'autonomous': request.user.autonomous.pk})
+        serializer = self.serializer_class(self.get_object(), data=data)
+        if serializer.is_valid():
+            obj = serializer.save()
+            context = {'request': request}
+            return Response(self.serializer_class_retrieve(obj, context=context).data, status=status.HTTP_201_CREATED)
+        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+
+    serializer_class = serializers.ReviewSerializer
+    serializer_class_retrieve = serializers.ReviewSerializerRetrieve
+
+    def get_queryset(self):
+        return self.request.user.profile.review_from.all()
+
+    def list(self, request):
+        raise MethodNotAllowed('GET')
+
+    def create(self, request):
+        data = request.data.copy()
+        data.update({'from_profile': request.user.profile.pk})
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid():
+            obj = serializer.save()
+            context = {'request': request}
+            return Response(self.serializer_class_retrieve(obj, context=context).data, status=status.HTTP_200_OK)
+        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk):
+        data = request.data.copy()
+        data.update({'from_profile': request.user.profile.pk})
         serializer = self.serializer_class(self.get_object(), data=data)
         if serializer.is_valid():
             obj = serializer.save()

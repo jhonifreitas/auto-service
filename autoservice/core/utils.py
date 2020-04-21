@@ -75,15 +75,15 @@ class Phone(object):
     def format(self):
         if self.phone:
             if len(self.phone) == 8:
-                return '%s.%s' % (self.phone[0:4], self.phone[4:8])
+                return '%s-%s' % (self.phone[0:4], self.phone[4:8])
             if len(self.phone) == 9:
-                return '%s %s.%s' % (self.phone[0:1], self.phone[1:5], self.phone[5:9])
+                return '%s%s-%s' % (self.phone[0:1], self.phone[1:5], self.phone[5:9])
             if len(self.phone) == 10:
-                return '%s %s.%s' % (self.phone[0:2], self.phone[2:6], self.phone[6:10])
+                return '(%s) %s-%s' % (self.phone[0:2], self.phone[2:6], self.phone[6:10])
             if len(self.phone) == 11:
-                return '%s %s%s.%s' % (self.phone[0:2], self.phone[2:3], self.phone[3:7], self.phone[7:11])
+                return '(%s) %s%s-%s' % (self.phone[0:2], self.phone[2:3], self.phone[3:7], self.phone[7:11])
             if len(self.phone) == 13:
-                return '+%s (%s) %s %s.%s' % (
+                return '+%s (%s) %s %s-%s' % (
                     self.phone[0:2],
                     self.phone[2:4],
                     self.phone[4:5],

@@ -27,6 +27,10 @@ class Profile(AbstractBaseModel):
     phone = models.CharField(verbose_name='Telefone', max_length=11)
     photo = models.ImageField(verbose_name='Foto', upload_to=get_profile_file_path, null=True, blank=True)
 
+    @property
+    def get_phone_formated(self):
+        return Phone(self.phone).format()
+
 
 class Autonomous(AbstractBaseModel):
 
@@ -53,8 +57,8 @@ class Autonomous(AbstractBaseModel):
 class AutonomousService(AbstractBaseModel):
 
     class Meta:
-        verbose_name = 'Serviço do perfil'
-        verbose_name_plural = 'Serviços do perfil'
+        verbose_name = 'Serviço do autônomo'
+        verbose_name_plural = 'Serviços do autônomo'
 
     autonomous = models.ForeignKey(Autonomous, verbose_name='Perfil', on_delete=models.CASCADE,
                                    related_name='autonomous_services')

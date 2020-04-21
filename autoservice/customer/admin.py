@@ -4,12 +4,6 @@ from autoservice.customer import models
 from autoservice.core.admin import thumbnail
 
 
-class ServiceInline(admin.TabularInline):
-
-    model = models.AutonomousService
-    extra = 1
-
-
 class ReviewInline(admin.TabularInline):
 
     model = models.Review
@@ -26,7 +20,7 @@ class AutonomousAdmin(admin.ModelAdmin):
 
     list_display = ['id', 'user', 'get_photo', 'city', 'rating', 'created_at']
     list_display_links = ['id', 'user']
-    inlines = [ServiceInline, ReviewInline]
+    inlines = [ReviewInline]
 
     def get_photo(self, obj):
         if obj.photo:
@@ -46,3 +40,10 @@ class ProfileAdmin(admin.ModelAdmin):
             return thumbnail(obj.photo)
         return None
     get_photo.short_description = 'Foto'
+
+
+@admin.register(models.AutonomousService)
+class AutonomousServiceAdmin(admin.ModelAdmin):
+
+    list_display = ['id', 'autonomous', 'service', 'type_pay', 'price', 'created_at']
+    list_display_links = ['id']

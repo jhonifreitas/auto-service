@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from autoservice.customer import models
 from autoservice.core.utils import Phone
 from autoservice.api.v1.core.serializers import (CitySerializerRetrieve, ServiceSerializerRetrieve,
-                                                 TypePaySerializerRetrieve)
+                                                 TypePaySerializerRetrieve, WeekSerializerRetrieve)
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -57,6 +57,7 @@ class ProfileSerializerRetrieve(serializers.ModelSerializer):
 
     name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
     city = CitySerializerRetrieve()
 
     class Meta:
@@ -69,12 +70,15 @@ class ProfileSerializerRetrieve(serializers.ModelSerializer):
     def get_email(self, obj):
         return obj.user.email
 
+    def get_phone(self, obj):
+        return obj.get_phone_formated
+
 
 class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Review
-        fields = ['to_autonomous', 'note', 'text']
+        fields = ['from_profile', 'to_autonomous', 'note', 'text']
 
 
 class ReviewSerializerRetrieve(serializers.ModelSerializer):
@@ -83,7 +87,7 @@ class ReviewSerializerRetrieve(serializers.ModelSerializer):
 
     class Meta:
         model = models.Review
-        fields = ['id', 'from_profile', 'note', 'text']
+        fields = ['id', 'from_profile', 'note', 'text', 'updated_at']
 
 
 class AutonomousServiceSerializer(serializers.ModelSerializer):
@@ -110,6 +114,7 @@ class AutonomousServiceSerializerRetrieve(serializers.ModelSerializer):
 
     service = ServiceSerializerRetrieve()
     type_pay = TypePaySerializerRetrieve()
+    week = WeekSerializerRetrieve(many=True)
 
     class Meta:
         model = models.AutonomousService
@@ -169,6 +174,7 @@ class AutonomousSerializerRetrieve(serializers.ModelSerializer):
 
     name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
     city = CitySerializerRetrieve()
     reviews = ReviewSerializerRetrieve(many=True, source='review_to')
     services = AutonomousServiceSerializerRetrieve(many=True, source='autonomous_services')
@@ -183,3 +189,6 @@ class AutonomousSerializerRetrieve(serializers.ModelSerializer):
 
     def get_email(self, obj):
         return obj.user.email
+
+    def get_phone(self, obj):
+        return obj.get_phone_formated
