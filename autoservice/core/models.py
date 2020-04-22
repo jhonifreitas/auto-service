@@ -11,7 +11,7 @@ from autoservice.storage import get_storage_path
 
 
 def get_service_file_path(instance, filename):
-    return get_storage_path(filename, 'profiles')
+    return get_storage_path(filename, 'services')
 
 
 class AbstractBaseModel(models.Model):

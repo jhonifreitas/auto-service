@@ -31,8 +31,9 @@ class ProfileViewSet(viewsets.ViewSet):
 
     def create(self, request):
         data = request.POST.copy()
-        if request.data.get('photo'):
-            data.update({'photo': request.data.get('photo')})
+        photo = request.data.get('photo')
+        if photo:
+            data.update({'photo': photo})
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -127,6 +128,41 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def update(self, request, pk):
         data = request.data.copy()
         data.update({'from_profile': request.user.profile.pk})
+        serializer = self.serializer_class(self.get_object(), data=data)
+        if serializer.is_valid():
+            obj = serializer.save()
+            context = {'request': request}
+            return Response(self.serializer_class_retrieve(obj, context=context).data, status=status.HTTP_201_CREATED)
+        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class JobDoneViewSet(viewsets.ModelViewSet):
+
+    serializer_class = serializers.JobDoneSerializer
+    serializer_class_retrieve = serializers.JobDoneSerializerRetrieve
+
+    def get_queryset(self):
+        return self.request.user.autonomous.jobs_done.all()
+
+    def list(self, request):
+        context = {'request': request}
+        return Response(
+            self.serializer_class_retrieve(self.get_queryset(), many=True, context=context).data,
+            status=status.HTTP_200_OK)
+
+    def create(self, request):
+        data = request.data.copy()
+        data.update({'autonomous': request.user.autonomous.pk})
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid():
+            obj = serializer.save()
+            context = {'request': request}
+            return Response(self.serializer_class_retrieve(obj, context=context).data, status=status.HTTP_200_OK)
+        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk):
+        data = request.data.copy()
+        data.update({'autonomous': request.user.autonomous.pk})
         serializer = self.serializer_class(self.get_object(), data=data)
         if serializer.is_valid():
             obj = serializer.save()

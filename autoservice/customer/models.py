@@ -12,6 +12,10 @@ def get_profile_file_path(instance, filename):
     return get_storage_path(filename, 'profiles')
 
 
+def get_jobs_done_file_path(instance, filename):
+    return get_storage_path(filename, 'jobs_done')
+
+
 def get_autonomous_file_path(instance, filename):
     return get_storage_path(filename, 'autonomous')
 
@@ -60,7 +64,7 @@ class AutonomousService(AbstractBaseModel):
         verbose_name = 'Serviço do autônomo'
         verbose_name_plural = 'Serviços do autônomo'
 
-    autonomous = models.ForeignKey(Autonomous, verbose_name='Perfil', on_delete=models.CASCADE,
+    autonomous = models.ForeignKey(Autonomous, verbose_name='Autônomo', on_delete=models.CASCADE,
                                    related_name='autonomous_services')
     service = models.ForeignKey(Service, verbose_name='Serviço', on_delete=models.CASCADE,
                                 related_name='autonomous_services')
@@ -98,7 +102,22 @@ class Review(AbstractBaseModel):
         self.to_autonomous.save()
 
 
+class JobDone(AbstractBaseModel):
+
+    class Meta:
+        verbose_name = 'Trabalho realizado'
+        verbose_name_plural = 'Trabalhos realizados'
+        ordering = ['service', '-created_at']
+
+    autonomous = models.ForeignKey(Autonomous, verbose_name='Autônomo', on_delete=models.CASCADE,
+                                   related_name='jobs_done')
+    service = models.ForeignKey(Service, verbose_name='Serviço', on_delete=models.CASCADE,
+                                related_name='jobs_done')
+    image = models.ImageField(verbose_name='Imagem', upload_to=get_jobs_done_file_path)
+
+
 auditlog.register(Review)
 auditlog.register(Profile)
+auditlog.register(JobDone)
 auditlog.register(Autonomous)
 auditlog.register(AutonomousService)

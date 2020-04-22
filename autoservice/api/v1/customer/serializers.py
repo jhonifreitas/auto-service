@@ -94,7 +94,7 @@ class AutonomousServiceSerializer(serializers.ModelSerializer):
 
     start_hour = serializers.CharField()
     end_hour = serializers.CharField()
-    price = serializers.CharField(max_length=14)
+    price = serializers.CharField(max_length=14, required=False)
 
     class Meta:
         model = models.AutonomousService
@@ -119,6 +119,22 @@ class AutonomousServiceSerializerRetrieve(serializers.ModelSerializer):
     class Meta:
         model = models.AutonomousService
         fields = ['id', 'service', 'week', 'start_hour', 'end_hour', 'type_pay', 'price']
+
+
+class JobDoneSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.JobDone
+        fields = ['autonomous', 'service', 'image']
+
+
+class JobDoneSerializerRetrieve(serializers.ModelSerializer):
+
+    service = ServiceSerializerRetrieve()
+
+    class Meta:
+        model = models.JobDone
+        fields = ['id', 'service', 'image']
 
 
 class AutonomousSerializer(serializers.ModelSerializer):
@@ -178,11 +194,12 @@ class AutonomousSerializerRetrieve(serializers.ModelSerializer):
     city = CitySerializerRetrieve()
     reviews = ReviewSerializerRetrieve(many=True, source='review_to')
     services = AutonomousServiceSerializerRetrieve(many=True, source='autonomous_services')
+    jobs_done = JobDoneSerializerRetrieve(many=True)
 
     class Meta:
         model = models.Autonomous
         fields = ['id', 'name', 'email', 'city', 'phone', 'photo', 'rating', 'birthday', 'about', 'reviews',
-                  'services']
+                  'services', 'jobs_done']
 
     def get_name(self, obj):
         return obj.user.get_full_name()
