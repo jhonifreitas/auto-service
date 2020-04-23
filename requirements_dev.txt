@@ -9,5 +9,4 @@ vcrpy
 pre-commit
 
 # Django Tests
-django-test-without-migrations
 ipython

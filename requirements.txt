@@ -9,6 +9,7 @@ gunicorn
 dj-database-url
 dj-static
 python-decouple
+django-test-without-migrations
 django-widget-tweaks
 django-extensions
 django-storages
