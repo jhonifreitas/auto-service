@@ -9,7 +9,7 @@ def create_states(apps, schema_editor):
 
     State = apps.get_model('core', 'State')
 
-    json_file = json.loads(open('%s/backup/states.json' % settings.BASE_DIR, 'r').read())
+    json_file = json.loads(open('%s/backup/first_load/states.json' % settings.BASE_DIR, 'r').read())
         
     for state in json_file:
         State.objects.get_or_create(**state)
@@ -20,11 +20,21 @@ def create_cities(apps, schema_editor):
     State = apps.get_model('core', 'State')
     City = apps.get_model('core', 'City')
 
-    json_file = json.loads(open('%s/backup/cities.json' % settings.BASE_DIR, 'r').read())
+    json_file = json.loads(open('%s/backup/first_load/cities.json' % settings.BASE_DIR, 'r').read())
         
     for city in json_file:
         state = State.objects.get(uf=city.get('state'))
         City.objects.get_or_create(name=city.get('name'), state=state)
+
+
+def create_days(apps, schema_editor):
+
+    Week = apps.get_model('core', 'Week')
+
+    json_file = json.loads(open('%s/backup/first_load/week.json' % settings.BASE_DIR, 'r').read())
+        
+    for day in json_file:
+        Week.objects.get_or_create(**day)
 
 
 class Migration(migrations.Migration):
@@ -35,5 +45,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(create_states),
-        migrations.RunPython(create_cities)
+        migrations.RunPython(create_cities),
+        migrations.RunPython(create_days)
     ]

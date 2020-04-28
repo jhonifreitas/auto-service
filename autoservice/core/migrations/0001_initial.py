@@ -67,11 +67,12 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Created at')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Updated at')),
                 ('name', models.CharField(max_length=255, verbose_name='Nome')),
+                ('order', models.PositiveIntegerField(default=0, verbose_name='Ordem')),
             ],
             options={
                 'verbose_name': 'Dia da Semana',
                 'verbose_name_plural': 'Dias da Semana',
-                'ordering': ['created_at'],
+                'ordering': ['order'],
             },
         ),
         migrations.CreateModel(

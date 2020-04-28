@@ -1,4 +1,5 @@
 from auditlog.registry import auditlog
+from datetime import datetime, timedelta
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -49,6 +50,7 @@ class Autonomous(AbstractBaseModel):
     rating = models.DecimalField(verbose_name='Avaliação', max_digits=2, decimal_places=1, default=0)
     photo = models.ImageField(verbose_name='Foto', upload_to=get_autonomous_file_path, null=True, blank=True)
     about = models.TextField(verbose_name='Sobre')
+    expiration = models.DateField(verbose_name='Expiração', default=datetime.now().date() + timedelta(days=90))
 
     @property
     def get_phone_formated(self):

@@ -68,9 +68,10 @@ class Week(AbstractBaseModel):
     class Meta:
         verbose_name = 'Dia da Semana'
         verbose_name_plural = 'Dias da Semana'
-        ordering = ['created_at']
+        ordering = ['order']
 
     name = models.CharField(verbose_name='Nome', max_length=255)
+    order = models.PositiveIntegerField(verbose_name='Ordem', default=0)
 
 
 class TypePay(AbstractBaseModel):

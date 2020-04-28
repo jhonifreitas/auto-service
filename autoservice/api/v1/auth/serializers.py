@@ -1,4 +1,5 @@
 from base64 import b64encode
+from datetime import datetime
 from rest_framework import serializers
 from itsdangerous import TimedJSONWebSignatureSerializer
 
@@ -17,8 +18,11 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         try:
             self.user = User.objects.get(username=data.get('username'))
-            if not self.user.check_password(data.get('password')):
+            if (not self.user.check_password(data.get('password')) or
+                    hasattr(self.user, 'profile') and hasattr(self.user, 'autonomous')):
                 raise serializers.ValidationError('Usuário ou senha não conferem.', code='invalid')
+            if hasattr(self.user, 'autonomous') and self.user.autonomous.expiration < datetime.now().date():
+                raise serializers.ValidationError('Usuário expirado!', code='invalid')
         except User.DoesNotExist:
             raise serializers.ValidationError('Usuário ou senha não conferem.', code='invalid')
 
