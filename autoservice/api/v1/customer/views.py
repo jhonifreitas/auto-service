@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -52,12 +54,10 @@ class ProfileViewSet(viewsets.ViewSet):
 
 class AutonomousViewSet(ProfileViewSet):
 
-    serializer_class = serializers.AutonomousSerializer
-    serializer_class_retrieve = serializers.AutonomousSerializerRetrieve
-
     def get_queryset(self):
         return self.serializer_class_retrieve.Meta.model.objects.filter(
-            autonomous_services__service__id=self.kwargs.get('service_id'))
+            types=self.serializer_class_retrieve.Meta.model.AUTONOMOUS, expiration__gte=datetime.now().date(),
+            services__service__id=self.kwargs.get('service_id'))
 
     def list(self, request, service_id):
         context = {'request': request}
@@ -70,13 +70,13 @@ class AutonomousViewSet(ProfileViewSet):
             self.get_object(), context=context).data, status=status.HTTP_200_OK)
 
 
-class AutonomousServiceViewSet(viewsets.ModelViewSet):
+class ProfileServiceViewSet(viewsets.ModelViewSet):
 
-    serializer_class = serializers.AutonomousServiceSerializer
-    serializer_class_retrieve = serializers.AutonomousServiceSerializerRetrieve
+    serializer_class = serializers.ProfileServiceSerializer
+    serializer_class_retrieve = serializers.ProfileServiceSerializerRetrieve
 
     def get_queryset(self):
-        return self.request.user.autonomous.autonomous_services.all()
+        return self.request.user.profile.services.all()
 
     def list(self, request):
         context = {'request': request}
@@ -85,7 +85,7 @@ class AutonomousServiceViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         data = request.data.copy()
-        data.update({'autonomous': request.user.autonomous.pk})
+        data.update({'profile': request.user.profile.pk})
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             obj = serializer.save()
@@ -95,7 +95,7 @@ class AutonomousServiceViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk):
         data = request.data.copy()
-        data.update({'autonomous': request.user.autonomous.pk})
+        data.update({'profile': request.user.profile.pk})
         serializer = self.serializer_class(self.get_object(), data=data)
         if serializer.is_valid():
             obj = serializer.save()
@@ -142,7 +142,7 @@ class JobDoneViewSet(viewsets.ModelViewSet):
     serializer_class_retrieve = serializers.JobDoneSerializerRetrieve
 
     def get_queryset(self):
-        return self.request.user.autonomous.jobs_done.all()
+        return self.request.user.profile.jobs_done.all()
 
     def list(self, request):
         context = {'request': request}
@@ -152,7 +152,7 @@ class JobDoneViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         data = request.data.copy()
-        data.update({'autonomous': request.user.autonomous.pk})
+        data.update({'profile': request.user.profile.pk})
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             obj = serializer.save()
@@ -162,7 +162,7 @@ class JobDoneViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk):
         data = request.data.copy()
-        data.update({'autonomous': request.user.autonomous.pk})
+        data.update({'profile': request.user.profile.pk})
         serializer = self.serializer_class(self.get_object(), data=data)
         if serializer.is_valid():
             obj = serializer.save()

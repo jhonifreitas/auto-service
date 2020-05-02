@@ -12,7 +12,7 @@ app_name = 'api.v1'
 router = routers.SimpleRouter()
 router.register('review', customer_views.ReviewViewSet, basename='review')
 router.register('job-done', customer_views.JobDoneViewSet, basename='job-done')
-router.register('autonomous/service', customer_views.AutonomousServiceViewSet, basename='autonomous-service')
+router.register('profile/service', customer_views.ProfileServiceViewSet, basename='profile-service')
 
 urlpatterns = [
     # AUTH

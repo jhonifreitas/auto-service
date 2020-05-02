@@ -8,6 +8,7 @@ class ReviewInline(admin.TabularInline):
 
     model = models.Review
     can_delete = False
+    fk_name = 'to_profile'
     readonly_fields = ['from_profile', 'note', 'text']
 
     def has_add_permission(self, request):
@@ -29,10 +30,10 @@ class JobDoneInline(admin.TabularInline):
     get_image.short_description = 'Imagem'
 
 
-@admin.register(models.Autonomous)
-class AutonomousAdmin(ImageWidgetAdmin):
+@admin.register(models.Profile)
+class ProfileAdmin(ImageWidgetAdmin):
 
-    list_display = ['id', 'user', 'get_photo', 'city', 'rating', 'created_at']
+    list_display = ['id', 'user', 'get_photo', 'city', 'types', 'created_at']
     list_display_links = ['id', 'user']
     inlines = [JobDoneInline, ReviewInline]
     image_fields = ['photo']
@@ -44,22 +45,9 @@ class AutonomousAdmin(ImageWidgetAdmin):
     get_photo.short_description = 'Foto'
 
 
-@admin.register(models.Profile)
-class ProfileAdmin(ImageWidgetAdmin):
+@admin.register(models.ProfileService)
+class ProfileServiceAdmin(admin.ModelAdmin):
 
-    list_display = ['id', 'user', 'get_photo', 'city', 'created_at']
-    list_display_links = ['id', 'user']
-    image_fields = ['photo']
-
-    def get_photo(self, obj):
-        if obj.photo:
-            return thumbnail(obj.photo)
-        return None
-    get_photo.short_description = 'Foto'
-
-
-@admin.register(models.AutonomousService)
-class AutonomousServiceAdmin(admin.ModelAdmin):
-
-    list_display = ['id', 'autonomous', 'service', 'type_pay', 'price', 'created_at']
+    list_display = ['id', 'profile', 'service', 'type_pay', 'price', 'created_at']
     list_display_links = ['id']
+    filter_horizontal = ['week']

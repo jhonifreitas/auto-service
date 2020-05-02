@@ -4,10 +4,9 @@ from rest_framework import serializers
 from itsdangerous import TimedJSONWebSignatureSerializer
 
 from django.conf import settings
-from django.contrib.auth.models import User
 
-from autoservice.customer import models
-from autoservice.api.v1.customer.serializers import ProfileSerializerRetrieve, AutonomousSerializerRetrieve
+from autoservice.customer.models import Profile
+from autoservice.api.v1.customer.serializers import ProfileSerializerRetrieve
 
 
 class LoginSerializer(serializers.Serializer):
@@ -17,13 +16,12 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, data):
         try:
-            self.user = User.objects.get(username=data.get('username'))
-            if (not self.user.check_password(data.get('password')) or
-                    hasattr(self.user, 'profile') and hasattr(self.user, 'autonomous')):
+            self.profile = Profile.objects.get(user__username=data.get('username'))
+            if not self.profile.user.check_password(data.get('password')):
                 raise serializers.ValidationError('Usuário ou senha não conferem.', code='invalid')
-            if hasattr(self.user, 'autonomous') and self.user.autonomous.expiration < datetime.now().date():
+            if self.profile.types == Profile.AUTONOMOUS and self.profile.expiration < datetime.now().date():
                 raise serializers.ValidationError('Usuário expirado!', code='invalid')
-        except User.DoesNotExist:
+        except Profile.DoesNotExist:
             raise serializers.ValidationError('Usuário ou senha não conferem.', code='invalid')
 
         return data
@@ -37,12 +35,7 @@ class LoginSerializer(serializers.Serializer):
     def get_data(self, request):
         context = {'request': request}
         data = {
-            'token': self.get_token()
+            'token': self.get_token(),
+            'profile': ProfileSerializerRetrieve(self.profile, context=context).data
         }
-        if hasattr(self.user, 'profile'):
-            data['profile'] = ProfileSerializerRetrieve(
-                models.Profile.objects.get(id=self.user.profile.pk), context=context).data
-        if hasattr(self.user, 'autonomous'):
-            data['autonomous'] = AutonomousSerializerRetrieve(
-                models.Autonomous.objects.get(id=self.user.autonomous.pk), context=context).data
         return data
