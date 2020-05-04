@@ -31,3 +31,6 @@ django-dbbackup
 djangorestframework
 itsdangerous
 django-cors-headers
+
+# PAGSEGURO
+pagseguro

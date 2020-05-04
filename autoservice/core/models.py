@@ -5,6 +5,7 @@ from auditlog.models import AuditlogHistoryField
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from autoservice.core import manager
 from autoservice.storage import get_storage_path
@@ -30,6 +31,20 @@ class AbstractBaseModel(models.Model):
         if hasattr(self, 'title'):
             return self.title
         return str(self.pk)
+
+
+class Config(AbstractBaseModel):
+
+    class Meta:
+        verbose_name = 'Geral'
+        verbose_name_plural = 'Geral'
+
+    avaliation_days = models.PositiveSmallIntegerField(verbose_name='Dias de avaliação')
+    value = models.DecimalField(verbose_name='Valor mensal', max_digits=6, decimal_places=2)
+    no_interest_installment = models.PositiveSmallIntegerField(
+        verbose_name='Número de Parcelas sem júros',
+        validators=[MinValueValidator(1), MaxValueValidator(18)]
+    )
 
 
 class State(AbstractBaseModel):

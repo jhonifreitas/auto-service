@@ -1,10 +1,9 @@
 from auditlog.registry import auditlog
-from datetime import datetime, timedelta
 
 from django.db import models
 from django.contrib.auth.models import User
 
-from autoservice.core.utils import Phone
+from autoservice.core.utils import Phone, CPF
 from autoservice.storage import get_storage_path
 from autoservice.core.models import AbstractBaseModel, City, Service, Week, TypePay
 
@@ -34,18 +33,29 @@ class Profile(AbstractBaseModel):
 
     user = models.OneToOneField(User, verbose_name='Usuário', on_delete=models.CASCADE, related_name='profile')
     types = models.CharField(verbose_name='Tipo', max_length=255, choices=TYPES, default=COMMON)
-    city = models.ForeignKey(City, verbose_name='Cidade', on_delete=models.CASCADE, related_name='profiles')
     phone = models.CharField(verbose_name='Telefone', max_length=11)
     photo = models.ImageField(verbose_name='Foto', upload_to=get_profile_file_path, null=True, blank=True)
     birthday = models.DateField(verbose_name='Data de Nascimento', null=True, blank=True)
+    cpf = models.CharField(verbose_name='CPF', max_length=11, null=True, blank=True)
+
+    zipcode = models.CharField(verbose_name='CEP', max_length=8, null=True, blank=True)
+    city = models.ForeignKey(City, verbose_name='Cidade', on_delete=models.CASCADE, related_name='profiles')
+    address = models.CharField(verbose_name='Endereço', max_length=255, null=True, blank=True)
+    number = models.CharField(verbose_name='Número', max_length=255, null=True, blank=True)
+    district = models.CharField(verbose_name='Bairro', max_length=255, null=True, blank=True)
+    complement = models.TextField(verbose_name='Complemento', null=True, blank=True)
+
     rating = models.DecimalField(verbose_name='Avaliação', max_digits=2, decimal_places=1, default=0)
     about = models.TextField(verbose_name='Sobre', null=True, blank=True)
-    expiration = models.DateField(verbose_name='Expiração', default=datetime.now().date() + timedelta(days=90),
-                                  null=True, blank=True)
+    expiration = models.DateField(verbose_name='Expiração', null=True, blank=True)
 
     @property
     def get_phone_formated(self):
         return Phone(self.phone).format()
+
+    @property
+    def get_cpf_formated(self):
+        return CPF(self.cpf).format()
 
     def __str__(self):
         return self.user.get_full_name()
@@ -105,6 +115,50 @@ class JobDone(AbstractBaseModel):
     service = models.ForeignKey(Service, verbose_name='Serviço', on_delete=models.CASCADE,
                                 related_name='jobs_done')
     image = models.ImageField(verbose_name='Imagem', upload_to=get_jobs_done_file_path)
+
+
+class PayRequest(AbstractBaseModel):
+
+    class Meta:
+        verbose_name = 'Solicitação'
+        verbose_name_plural = 'Solicitações'
+        ordering = ['-created_at']
+
+    TICKET = 'ticket'
+    CREDIT_CARD = 'credit_card'
+
+    WAITING = '1'
+    IN_ANALYSIS = '2'
+    PAID = '3'
+    DISPONIBLE = '4'
+    IN_DISPUTE = '5'
+    RETURNED = '6'
+    CANCELED = '7'
+    DEBITED = '8'
+    TEMPORARY_RETENTION = '9'
+
+    PAY_TYPES = [
+        (TICKET, 'Boleto'),
+        (CREDIT_CARD, 'Cartão de Crédito')
+    ]
+
+    STATUS = [
+        (WAITING, 'Aguardando pagamento'),
+        (IN_ANALYSIS, 'Em análise'),
+        (PAID, 'Pago'),
+        (DISPONIBLE, 'Disponível'),
+        (IN_DISPUTE, 'Em disputa'),
+        (RETURNED, 'Devolvido'),
+        (CANCELED, 'Cancelado'),
+        (DEBITED, 'Debitado'),
+        (TEMPORARY_RETENTION, 'Retenção temporária'),
+    ]
+
+    profile = models.ForeignKey(Profile, verbose_name='Perfil', on_delete=models.CASCADE, related_name='pay_requests')
+    code = models.CharField(verbose_name='Código', max_length=255, unique=True)
+    payment_link = models.URLField(verbose_name='Link Pagamento')
+    payment_type = models.CharField(verbose_name='Tipo de Pagamento', choices=PAY_TYPES, max_length=255)
+    status = models.CharField(verbose_name='Status', max_length=1, choices=STATUS, default=WAITING)
 
 
 auditlog.register(Review)

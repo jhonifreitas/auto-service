@@ -38,3 +38,10 @@ class TypePaySerializerRetrieve(serializers.ModelSerializer):
     class Meta:
         model = models.TypePay
         fields = ['id', 'name']
+
+
+class ConfigSerializerRetrieve(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Config
+        fields = ['avaliation_days', 'value', 'no_interest_installment']

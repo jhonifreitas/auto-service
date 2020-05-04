@@ -18,10 +18,9 @@ class TokenAuthenticate(BasicAuthentication):
 
     ALLOWED_PATHS = [
         'login',
-        'state-list',
+        'register',
         'city-list',
-        'profile-register',
-        'autonomous-register',
+        'state-list',
     ]
 
     def allowed_path(self, request):

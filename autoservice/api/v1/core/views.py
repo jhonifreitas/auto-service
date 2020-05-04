@@ -64,3 +64,14 @@ class TypePayViewSet(viewsets.ViewSet):
         context = {'request': request}
         return Response(self.serializer_class(
             self.get_queryset(), many=True, context=context).data, status=status.HTTP_200_OK)
+
+
+class ConfigViewSet(viewsets.ViewSet):
+
+    serializer_class = serializers.ConfigSerializerRetrieve
+
+    def get_queryset(self):
+        return self.serializer_class.Meta.model.objects.first()
+
+    def retrieve(self, request):
+        return Response(self.serializer_class(self.get_queryset()).data, status=status.HTTP_200_OK)

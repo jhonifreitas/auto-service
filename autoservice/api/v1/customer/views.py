@@ -17,9 +17,6 @@ class ProfileViewSet(viewsets.ViewSet):
     serializer_class_login = LoginSerializer
     serializer_class_retrieve = serializers.ProfileSerializerRetrieve
 
-    def get_object(self):
-        return get_object_or_404(self.serializer_class_retrieve.Meta.model, pk=self.kwargs.get('pk'))
-
     def login(self, post_data):
         data = {
             'username': post_data.get('email'),
@@ -42,9 +39,8 @@ class ProfileViewSet(viewsets.ViewSet):
             return self.login(data)
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, pk):
-        obj = self.get_object()
-        serializer = self.serializer_class(instance=obj, data=request.data, partial=True)
+    def patch(self, request):
+        serializer = self.serializer_class(instance=request.user.profile, data=request.data, partial=True)
         if serializer.is_valid():
             obj = serializer.save()
             context = {'request': request}
@@ -53,6 +49,9 @@ class ProfileViewSet(viewsets.ViewSet):
 
 
 class AutonomousViewSet(ProfileViewSet):
+
+    def get_object(self):
+        return get_object_or_404(self.serializer_class_retrieve.Meta.model, pk=self.kwargs.get('pk'))
 
     def get_queryset(self):
         return self.serializer_class_retrieve.Meta.model.objects.filter(

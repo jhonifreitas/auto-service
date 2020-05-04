@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 
 from autoservice.customer import models
-from autoservice.core.utils import Phone
+from autoservice.core.utils import Phone, ZipCode, CPF
 from autoservice.api.v1.core.serializers import (CitySerializerRetrieve, ServiceSerializerRetrieve,
                                                  TypePaySerializerRetrieve, WeekSerializerRetrieve)
 
@@ -11,6 +11,8 @@ from autoservice.api.v1.core.serializers import (CitySerializerRetrieve, Service
 class ProfileSerializer(serializers.ModelSerializer):
 
     phone = serializers.CharField(max_length=15)
+    cpf = serializers.CharField(max_length=14)
+    zipcode = serializers.CharField(max_length=9)
     name = serializers.CharField(max_length=255)
     email = serializers.EmailField()
     birthday = serializers.CharField(required=False)
@@ -18,10 +20,17 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Profile
-        fields = ['name', 'email', 'photo', 'city', 'phone', 'birthday', 'about', 'password']
+        fields = ['name', 'email', 'cpf', 'photo', 'city', 'phone', 'birthday', 'about', 'zipcode', 'address',
+                  'district', 'number', 'complement', 'password']
 
     def validate_phone(self, value):
         return Phone(value).cleaning()
+
+    def validate_cpf(self, value):
+        return CPF(value).cleaning()
+
+    def validate_zipcode(self, value):
+        return ZipCode(value).cleaning()
 
     def get_first_name(self, name):
         list_name = name.split(' ')
@@ -50,10 +59,10 @@ class ProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)
         name = validated_data.get('name')
-
-        instance.user.fisrt_name = self.get_first_name(name)
-        instance.user.last_name = self.get_last_name(name)
-        instance.user.save()
+        if name:
+            instance.user.fisrt_name = self.get_first_name(name)
+            instance.user.last_name = self.get_last_name(name)
+            instance.user.save()
         return instance
 
 
@@ -131,6 +140,7 @@ class ProfileSerializerRetrieve(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     phone = serializers.SerializerMethodField()
+    cpf = serializers.SerializerMethodField()
     city = CitySerializerRetrieve()
     reviews = ReviewSerializerRetrieve(many=True, source='review_to')
     services = ProfileServiceSerializerRetrieve(many=True)
@@ -138,8 +148,8 @@ class ProfileSerializerRetrieve(serializers.ModelSerializer):
 
     class Meta:
         model = models.Profile
-        fields = ['id', 'name', 'types', 'email', 'city', 'phone', 'photo', 'rating', 'birthday', 'about', 'reviews',
-                  'services', 'jobs_done']
+        fields = ['id', 'name', 'cpf', 'types', 'email', 'city', 'phone', 'photo', 'rating', 'birthday', 'about',
+                  'zipcode', 'address', 'district', 'number', 'complement', 'reviews', 'services', 'jobs_done']
 
     def get_name(self, obj):
         return obj.user.get_full_name()
@@ -149,3 +159,6 @@ class ProfileSerializerRetrieve(serializers.ModelSerializer):
 
     def get_phone(self, obj):
         return obj.get_phone_formated
+
+    def get_cpf(self, obj):
+        return obj.get_cpf_formated
