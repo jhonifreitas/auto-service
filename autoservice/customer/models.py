@@ -156,7 +156,7 @@ class PayRequest(AbstractBaseModel):
 
     profile = models.ForeignKey(Profile, verbose_name='Perfil', on_delete=models.CASCADE, related_name='pay_requests')
     code = models.CharField(verbose_name='Código', max_length=255, unique=True)
-    payment_link = models.URLField(verbose_name='Link Pagamento')
+    payment_link = models.URLField(verbose_name='Link Pagamento', null=True, blank=True)
     payment_type = models.CharField(verbose_name='Tipo de Pagamento', choices=PAY_TYPES, max_length=255)
     status = models.CharField(verbose_name='Status', max_length=1, choices=STATUS, default=WAITING)
 

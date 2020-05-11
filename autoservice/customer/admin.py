@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 from autoservice.customer import models
 from autoservice.core.admin import ImageWidgetAdmin, thumbnail
@@ -13,6 +14,24 @@ class ReviewInline(admin.TabularInline):
 
     def has_add_permission(self, request):
         return False
+
+
+class PayRequestInline(admin.TabularInline):
+
+    model = models.PayRequest
+    # can_delete = False
+    fields = ['code', 'get_payment_link', 'payment_type', 'status']
+    readonly_fields = ['code', 'get_payment_link', 'payment_type', 'status']
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_payment_link(self, obj):
+        html = '-'
+        if obj.payment_link:
+            html = '<a href="{}" target="_blank">Clique aqui</a>'.format(obj.payment_link)
+        return mark_safe(html)
+    get_payment_link.short_description = 'Link Pagamento'
 
 
 class JobDoneInline(admin.TabularInline):
@@ -35,7 +54,7 @@ class ProfileAdmin(ImageWidgetAdmin):
 
     list_display = ['id', 'user', 'get_photo', 'city', 'types', 'created_at']
     list_display_links = ['id', 'user']
-    inlines = [JobDoneInline, ReviewInline]
+    inlines = [JobDoneInline, ReviewInline, PayRequestInline]
     image_fields = ['photo']
 
     def get_photo(self, obj):

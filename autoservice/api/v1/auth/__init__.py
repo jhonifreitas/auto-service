@@ -21,6 +21,7 @@ class TokenAuthenticate(BasicAuthentication):
         'register',
         'city-list',
         'state-list',
+        'pag-notification'
     ]
 
     def allowed_path(self, request):

@@ -30,6 +30,15 @@ class Transcation:
             "cpf": data.cpf,
         }
 
+    def set_pre_approval(self, config):
+        self.pg.pre_approval = {
+            'charge': 'AUTO',
+            'name': 'Assinatura do Aplicativo Auto Service',
+            'details': 'Todo dia 10 de cada mês será cobrado o valor de R$ {}'.format(config.value),
+            'amount_per_payment': config.value,
+            'period': 'MONTHLY'
+        }
+
     def get_config(self):
         return {'sandbox': self.sandbox, 'USE_SHIPPING': self.use_shipping}
 
@@ -48,35 +57,35 @@ class Transcation:
     def get_notification(self, code):
         return self.pg.check_notification(code)
 
-    def credit_card(self, data):
+    def credit_card(self, card, profile):
         config = Config.objects.first()
         self.pg.payment.update({'method': 'creditCard'})
         self.pg.credit_card = {
-            'credit_card_token': data.get('card_token'),
-            'installment_quantity': data.get('card_installment_quantity'),
-            'installment_value': data.get('card_installment_value'),
+            'credit_card_token': card.get('card_token'),
+            'installment_quantity': 1,
+            'installment_value': config.value,
             'no_interest_installment_quantity': config.no_interest_installment,
 
-            'card_holder_name': data.get('card_name'),
-            'card_holder_cpf': data.get('card_cpf'),
+            'card_holder_name': card.get('card_name'),
+            'card_holder_cpf': card.get('card_cpf'),
 
-            'billing_address_street': data.get('address'),
-            'billing_address_number': data.get('number'),
-            'billing_address_complement': data.get('complement'),
-            'billing_address_district': data.get('district'),
-            'billing_address_postal_code': data.get('postal_code'),
-            'billing_address_city': data.get('city'),
-            'billing_address_state': data.get('state'),
+            'billing_address_street': profile.address,
+            'billing_address_number': profile.number,
+            'billing_address_complement': profile.complement,
+            'billing_address_district': profile.district,
+            'billing_address_postal_code': profile.zipcode,
+            'billing_address_city': profile.city.name,
+            'billing_address_state': profile.city.state.uf,
         }
         return self.checkout()
 
     def checkout(self):
         config = Config.objects.first()
         self.pg.notification_url = '{}{}'.format(self.host, self.notification_url)
-
+        self.set_pre_approval(config)
         self.pg.items = [{
-            "id": self.ad.pk,
-            "description": self.ad.earth.name,
+            "id": 1,
+            "description": 'Assinatura do Aplicativo Auto Service',
             "amount": config.value,
             "quantity": 1
         }]
