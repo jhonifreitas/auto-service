@@ -5,15 +5,15 @@ from django.contrib.auth.models import User
 
 from autoservice.core.utils import Phone, CPF
 from autoservice.storage import get_storage_path
-from autoservice.core.models import AbstractBaseModel, City, Service, Week, TypePay
+from autoservice.core.models import AbstractBaseModel, City, Category, TypePay
 
 
 def get_profile_file_path(instance, filename):
     return get_storage_path(filename, 'profiles')
 
 
-def get_jobs_done_file_path(instance, filename):
-    return get_storage_path(filename, 'jobs_done')
+def get_gallery_file_path(instance, filename):
+    return get_storage_path(filename, 'gallery')
 
 
 class Profile(AbstractBaseModel):
@@ -24,11 +24,11 @@ class Profile(AbstractBaseModel):
         ordering = ['-rating', 'user']
 
     COMMON = 'common'
-    AUTONOMOUS = 'autonomous'
+    PROFESSIONAL = 'professional'
 
     TYPES = [
         (COMMON, 'Comum'),
-        (AUTONOMOUS, 'Autônomo'),
+        (PROFESSIONAL, 'Profissional'),
     ]
 
     user = models.OneToOneField(User, verbose_name='Usuário', on_delete=models.CASCADE, related_name='profile')
@@ -46,7 +46,6 @@ class Profile(AbstractBaseModel):
     complement = models.TextField(verbose_name='Complemento', null=True, blank=True)
 
     rating = models.DecimalField(verbose_name='Avaliação', max_digits=2, decimal_places=1, default=0)
-    about = models.TextField(verbose_name='Sobre', null=True, blank=True)
     expiration = models.DateField(verbose_name='Expiração', null=True, blank=True)
 
     @property
@@ -61,21 +60,40 @@ class Profile(AbstractBaseModel):
         return self.user.get_full_name()
 
 
-class ProfileService(AbstractBaseModel):
+class ProfileCategory(AbstractBaseModel):
 
     class Meta:
-        verbose_name = 'Serviço do perfil'
-        verbose_name_plural = 'Serviços do perfil'
+        verbose_name = 'Categoria do perfil'
+        verbose_name_plural = 'Categorias do perfil'
 
-    profile = models.ForeignKey(Profile, verbose_name='Perfil', on_delete=models.CASCADE, related_name='services')
-    service = models.ForeignKey(Service, verbose_name='Serviço', on_delete=models.CASCADE,
-                                related_name='profile_services')
-    week = models.ManyToManyField(Week, verbose_name='Dias da Semana', related_name='services')
-    start_hour = models.TimeField(verbose_name='Horário Inicial')
-    end_hour = models.TimeField(verbose_name='Horário Final')
+    profile = models.ForeignKey(Profile, verbose_name='Perfil', on_delete=models.CASCADE, related_name='categories')
+    category = models.ForeignKey(Category, verbose_name='Serviço', on_delete=models.CASCADE,
+                                 related_name='profile_categories')
     type_pay = models.ForeignKey(TypePay, verbose_name='Tipo de Pagamento', on_delete=models.CASCADE,
-                                 related_name='services')
+                                 related_name='categories')
     price = models.DecimalField(verbose_name='Preço', max_digits=12, decimal_places=2, null=True, blank=True)
+
+
+class Service(AbstractBaseModel):
+
+    class Meta:
+        verbose_name = 'Serviço'
+
+    DONE = 'done'
+    RECUSED = 'recused'
+    APPROVED = 'approved'
+    REQUESTED = 'requested'
+
+    STATUS = [
+        (DONE, 'Realizado'),
+        (RECUSED, 'Recusado'),
+        (APPROVED, 'Aprovado'),
+        (REQUESTED, 'Solicitado')
+    ]
+
+    from_profile = models.ForeignKey(Profile, verbose_name='De', on_delete=models.CASCADE, related_name='service_from')
+    to_profile = models.ForeignKey(Profile, verbose_name='Para', on_delete=models.CASCADE, related_name='service_to')
+    status = models.CharField(verbose_name='Status', choices=STATUS, max_length=255)
 
 
 class Review(AbstractBaseModel):
@@ -104,17 +122,15 @@ class Review(AbstractBaseModel):
         self.to_profile.save()
 
 
-class JobDone(AbstractBaseModel):
+class Gallery(AbstractBaseModel):
 
     class Meta:
-        verbose_name = 'Trabalho realizado'
+        verbose_name = 'Galeria'
         verbose_name_plural = 'Trabalhos realizados'
-        ordering = ['service', '-created_at']
+        ordering = ['-created_at']
 
-    profile = models.ForeignKey(Profile, verbose_name='Perfil', on_delete=models.CASCADE, related_name='jobs_done')
-    service = models.ForeignKey(Service, verbose_name='Serviço', on_delete=models.CASCADE,
-                                related_name='jobs_done')
-    image = models.ImageField(verbose_name='Imagem', upload_to=get_jobs_done_file_path)
+    profile = models.ForeignKey(Profile, verbose_name='Perfil', on_delete=models.CASCADE, related_name='gallery')
+    image = models.ImageField(verbose_name='Imagem', upload_to=get_gallery_file_path)
 
 
 class PayRequest(AbstractBaseModel):
@@ -163,5 +179,5 @@ class PayRequest(AbstractBaseModel):
 
 auditlog.register(Review)
 auditlog.register(Profile)
-auditlog.register(JobDone)
-auditlog.register(ProfileService)
+auditlog.register(Gallery)
+auditlog.register(ProfileCategory)

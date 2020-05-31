@@ -19,7 +19,7 @@ class LoginSerializer(serializers.Serializer):
             self.profile = Profile.objects.get(user__username=data.get('username'))
             if not self.profile.user.check_password(data.get('password')):
                 raise serializers.ValidationError('Usuário ou senha não conferem.', code='invalid')
-            if self.profile.types == Profile.AUTONOMOUS and self.profile.expiration < datetime.now().date():
+            if self.profile.types == Profile.PROFESSIONAL and self.profile.expiration < datetime.now().date():
                 raise serializers.ValidationError('Usuário expirado!', code='invalid')
         except Profile.DoesNotExist:
             raise serializers.ValidationError('Usuário ou senha não conferem.', code='invalid')

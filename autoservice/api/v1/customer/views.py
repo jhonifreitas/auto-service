@@ -48,15 +48,15 @@ class ProfileViewSet(viewsets.ViewSet):
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AutonomousViewSet(ProfileViewSet):
+class ProfessionalViewSet(ProfileViewSet):
 
     def get_object(self):
         return get_object_or_404(self.serializer_class_retrieve.Meta.model, pk=self.kwargs.get('pk'))
 
     def get_queryset(self):
         return self.serializer_class_retrieve.Meta.model.objects.filter(
-            types=self.serializer_class_retrieve.Meta.model.AUTONOMOUS, expiration__gte=datetime.now().date(),
-            services__service__id=self.kwargs.get('service_id'))
+            types=self.serializer_class_retrieve.Meta.model.PROFESSIONAL, expiration__gte=datetime.now().date(),
+            categories__category__id=self.kwargs.get('category_id'))
 
     def list(self, request, service_id):
         context = {'request': request}
@@ -69,13 +69,13 @@ class AutonomousViewSet(ProfileViewSet):
             self.get_object(), context=context).data, status=status.HTTP_200_OK)
 
 
-class ProfileServiceViewSet(viewsets.ModelViewSet):
+class ProfileCategoryViewSet(viewsets.ModelViewSet):
 
-    serializer_class = serializers.ProfileServiceSerializer
-    serializer_class_retrieve = serializers.ProfileServiceSerializerRetrieve
+    serializer_class = serializers.ProfileCategorySerializer
+    serializer_class_retrieve = serializers.ProfileCategorySerializerRetrieve
 
     def get_queryset(self):
-        return self.request.user.profile.services.all()
+        return self.request.user.profile.categories.all()
 
     def list(self, request):
         context = {'request': request}
@@ -135,13 +135,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class JobDoneViewSet(viewsets.ModelViewSet):
+class GalleryViewSet(viewsets.ModelViewSet):
 
-    serializer_class = serializers.JobDoneSerializer
-    serializer_class_retrieve = serializers.JobDoneSerializerRetrieve
+    serializer_class = serializers.GallerySerializer
+    serializer_class_retrieve = serializers.GallerySerializerRetrieve
 
     def get_queryset(self):
-        return self.request.user.profile.jobs_done.all()
+        return self.request.user.profile.gallery.all()
 
     def list(self, request):
         context = {'request': request}

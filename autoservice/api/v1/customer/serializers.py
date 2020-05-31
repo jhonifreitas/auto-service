@@ -4,8 +4,8 @@ from django.contrib.auth.models import User
 
 from autoservice.customer import models
 from autoservice.core.utils import Phone, ZipCode, CPF
-from autoservice.api.v1.core.serializers import (CitySerializerRetrieve, ServiceSerializerRetrieve,
-                                                 TypePaySerializerRetrieve, WeekSerializerRetrieve)
+from autoservice.api.v1.core.serializers import (CitySerializerRetrieve, CategorySerializerRetrieve,
+                                                 TypePaySerializerRetrieve)
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -88,51 +88,42 @@ class ReviewSerializerRetrieve(serializers.ModelSerializer):
         }
 
 
-class ProfileServiceSerializer(serializers.ModelSerializer):
+class ProfileCategorySerializer(serializers.ModelSerializer):
 
-    start_hour = serializers.CharField()
-    end_hour = serializers.CharField()
     price = serializers.CharField(max_length=14, required=False)
 
     class Meta:
-        model = models.ProfileService
-        fields = ['profile', 'service', 'week', 'start_hour', 'end_hour', 'type_pay', 'price']
-
-    def validate_start_hour(self, value):
-        return value[11:]
-
-    def validate_end_hour(self, value):
-        return value[11:]
+        model = models.ProfileCategory
+        fields = ['profile', 'category', 'type_pay', 'price']
 
     def validate_price(self, value):
         return value.replace('.', '').replace(',', '.')
 
 
-class ProfileServiceSerializerRetrieve(serializers.ModelSerializer):
+class ProfileCategorySerializerRetrieve(serializers.ModelSerializer):
 
-    service = ServiceSerializerRetrieve()
+    category = CategorySerializerRetrieve()
     type_pay = TypePaySerializerRetrieve()
-    week = WeekSerializerRetrieve(many=True)
 
     class Meta:
-        model = models.ProfileService
-        fields = ['id', 'service', 'week', 'start_hour', 'end_hour', 'type_pay', 'price']
+        model = models.ProfileCategory
+        fields = ['id', 'category', 'type_pay', 'price']
 
 
-class JobDoneSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.JobDone
-        fields = ['profile', 'service', 'image']
-
-
-class JobDoneSerializerRetrieve(serializers.ModelSerializer):
-
-    service = ServiceSerializerRetrieve()
+class GallerySerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = models.JobDone
-        fields = ['id', 'service', 'image']
+        model = models.Gallery
+        fields = ['profile', 'category', 'image']
+
+
+class GallerySerializerRetrieve(serializers.ModelSerializer):
+
+    category = CategorySerializerRetrieve()
+
+    class Meta:
+        model = models.Gallery
+        fields = ['id', 'category', 'image']
 
 
 class ProfileSerializerRetrieve(serializers.ModelSerializer):
@@ -143,13 +134,13 @@ class ProfileSerializerRetrieve(serializers.ModelSerializer):
     cpf = serializers.SerializerMethodField()
     city = CitySerializerRetrieve()
     reviews = ReviewSerializerRetrieve(many=True, source='review_to')
-    services = ProfileServiceSerializerRetrieve(many=True)
-    jobs_done = JobDoneSerializerRetrieve(many=True)
+    categories = ProfileCategorySerializerRetrieve(many=True)
+    gallery = GallerySerializerRetrieve(many=True)
 
     class Meta:
         model = models.Profile
-        fields = ['id', 'name', 'cpf', 'types', 'email', 'city', 'phone', 'photo', 'rating', 'birthday', 'about',
-                  'zipcode', 'address', 'district', 'number', 'complement', 'reviews', 'services', 'jobs_done']
+        fields = ['id', 'name', 'cpf', 'types', 'email', 'city', 'phone', 'photo', 'rating', 'birthday', 'zipcode',
+                  'address', 'district', 'number', 'complement', 'reviews', 'categories', 'gallery']
 
     def get_name(self, obj):
         return obj.user.get_full_name()

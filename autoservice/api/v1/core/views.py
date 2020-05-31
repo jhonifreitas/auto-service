@@ -27,22 +27,9 @@ class CityViewSet(viewsets.ViewSet):
         return Response(self.serializer_class(self.get_queryset(), many=True).data, status=status.HTTP_200_OK)
 
 
-class ServiceViewSet(viewsets.ViewSet):
+class CategoryViewSet(viewsets.ViewSet):
 
-    serializer_class = serializers.ServiceSerializerRetrieve
-
-    def get_queryset(self):
-        return self.serializer_class.Meta.model.objects.all()
-
-    def list(self, request):
-        context = {'request': request}
-        return Response(self.serializer_class(
-            self.get_queryset(), many=True, context=context).data, status=status.HTTP_200_OK)
-
-
-class WeekViewSet(viewsets.ViewSet):
-
-    serializer_class = serializers.WeekSerializerRetrieve
+    serializer_class = serializers.CategorySerializerRetrieve
 
     def get_queryset(self):
         return self.serializer_class.Meta.model.objects.all()

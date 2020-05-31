@@ -1,9 +1,0 @@
-[
-    {"name": "Domingo", "order": 0},
-    {"name": "Segunda-feira", "order": 1},
-    {"name": "Terça-feira", "order": 2},
-    {"name": "Quarta-feira", "order": 3},
-    {"name": "Quinta-feira", "order": 4},
-    {"name": "Sexta-feira", "order": 5},
-    {"name": "Sábado", "order": 6}
-]

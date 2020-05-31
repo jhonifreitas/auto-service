@@ -19,18 +19,11 @@ class CitySerializerRetrieve(serializers.ModelSerializer):
         fields = ['id', 'name', 'state']
 
 
-class ServiceSerializerRetrieve(serializers.ModelSerializer):
+class CategorySerializerRetrieve(serializers.ModelSerializer):
 
     class Meta:
-        model = models.Service
-        fields = ['id', 'name', 'icon']
-
-
-class WeekSerializerRetrieve(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.Week
-        fields = ['id', 'name']
+        model = models.Category
+        fields = ['id', 'name', 'image', 'icon']
 
 
 class TypePaySerializerRetrieve(serializers.ModelSerializer):

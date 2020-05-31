@@ -10,8 +10,8 @@ from autoservice.core import manager
 from autoservice.storage import get_storage_path
 
 
-def get_service_file_path(instance, filename):
-    return get_storage_path(filename, 'services')
+def get_category_file_path(instance, filename):
+    return get_storage_path(filename, 'categories')
 
 
 class AbstractBaseModel(models.Model):
@@ -66,26 +66,15 @@ class City(AbstractBaseModel):
     name = models.CharField(verbose_name='Nome', max_length=255)
 
 
-class Service(AbstractBaseModel):
+class Category(AbstractBaseModel):
 
     class Meta:
-        verbose_name = 'Serviço'
+        verbose_name = 'Categoria'
         ordering = ['name']
 
     name = models.CharField(verbose_name='Nome', max_length=255)
-    image = models.ImageField(verbose_name='Imagem', upload_to=get_service_file_path)
-    icon = models.ImageField(verbose_name='Icone', upload_to=get_service_file_path)
-
-
-class Week(AbstractBaseModel):
-
-    class Meta:
-        verbose_name = 'Dia da Semana'
-        verbose_name_plural = 'Dias da Semana'
-        ordering = ['order']
-
-    name = models.CharField(verbose_name='Nome', max_length=255)
-    order = models.PositiveIntegerField(verbose_name='Ordem', default=0)
+    image = models.ImageField(verbose_name='Imagem', upload_to=get_category_file_path)
+    icon = models.ImageField(verbose_name='Icone', upload_to=get_category_file_path)
 
 
 class TypePay(AbstractBaseModel):
@@ -100,7 +89,6 @@ class TypePay(AbstractBaseModel):
 
 
 auditlog.register(City)
-auditlog.register(Week)
 auditlog.register(State)
-auditlog.register(Service)
 auditlog.register(TypePay)
+auditlog.register(Category)

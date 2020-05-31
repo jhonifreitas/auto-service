@@ -66,13 +66,6 @@ class StateAdmin(admin.ModelAdmin):
     list_display_links = ['id', 'name']
 
 
-@admin.register(models.Week)
-class WeekAdmin(admin.ModelAdmin):
-
-    list_display = ['id', 'name', 'updated_at', 'created_at']
-    list_display_links = ['id', 'name']
-
-
 @admin.register(models.TypePay)
 class TypePayAdmin(admin.ModelAdmin):
 
@@ -81,12 +74,16 @@ class TypePayAdmin(admin.ModelAdmin):
     list_editable = ['order']
 
 
-@admin.register(models.Service)
-class ServiceAdmin(ImageWidgetAdmin):
+@admin.register(models.Category)
+class CategoryAdmin(ImageWidgetAdmin):
 
-    list_display = ['id', 'name', 'get_icon', 'updated_at', 'created_at']
+    list_display = ['id', 'name', 'get_image', 'get_icon', 'updated_at', 'created_at']
     list_display_links = ['id', 'name']
     image_fields = ['icon']
+
+    def get_image(self, obj):
+        return thumbnail(obj.image)
+    get_image.short_description = 'Imagem'
 
     def get_icon(self, obj):
         return thumbnail(obj.icon)

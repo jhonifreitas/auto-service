@@ -44,7 +44,7 @@ class PaymentViewSet(viewsets.ViewSet):
                 payment_link = result.transaction.get('paymentLink')
                 serializer.save(code=code, payment_link=payment_link)
 
-                profile.types = Profile.AUTONOMOUS
+                profile.types = Profile.PROFESSIONAL
                 profile.expiration = datetime.now() + timedelta(days=30)
                 profile.save()
                 context = {'request': request}

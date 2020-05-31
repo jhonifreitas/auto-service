@@ -34,9 +34,9 @@ class PayRequestInline(admin.TabularInline):
     get_payment_link.short_description = 'Link Pagamento'
 
 
-class JobDoneInline(admin.TabularInline):
+class GalleryInline(admin.TabularInline):
 
-    model = models.JobDone
+    model = models.Gallery
     can_delete = False
     fields = ['get_image']
     readonly_fields = ['get_image']
@@ -54,7 +54,7 @@ class ProfileAdmin(ImageWidgetAdmin):
 
     list_display = ['id', 'user', 'get_photo', 'city', 'types', 'created_at']
     list_display_links = ['id', 'user']
-    inlines = [JobDoneInline, ReviewInline, PayRequestInline]
+    inlines = [GalleryInline, ReviewInline, PayRequestInline]
     image_fields = ['photo']
 
     def get_photo(self, obj):
@@ -64,9 +64,8 @@ class ProfileAdmin(ImageWidgetAdmin):
     get_photo.short_description = 'Foto'
 
 
-@admin.register(models.ProfileService)
-class ProfileServiceAdmin(admin.ModelAdmin):
+@admin.register(models.ProfileCategory)
+class ProfileCategoryAdmin(admin.ModelAdmin):
 
-    list_display = ['id', 'profile', 'service', 'type_pay', 'price', 'created_at']
+    list_display = ['id', 'profile', 'category', 'type_pay', 'price', 'created_at']
     list_display_links = ['id']
-    filter_horizontal = ['week']
