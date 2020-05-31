@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from autoservice.core.utils import CPF
 from autoservice.customer.models import PayRequest, Profile
 
 
@@ -16,13 +15,9 @@ class PayRequestSerializer(serializers.Serializer):
     card_token = serializers.CharField(required=False)
     card_number = serializers.CharField(required=False)
     card_name = serializers.CharField(required=False)
-    card_cpf = serializers.CharField(max_length=14, required=False)
     card_month = serializers.IntegerField(required=False)
     card_year = serializers.IntegerField(required=False)
     card_cvv = serializers.IntegerField(required=False)
-
-    def validate_card_cpf(self, value):
-        return CPF(value).cleaning()
 
     def create(self, validated_data):
         validated_data.pop('sender_hash')

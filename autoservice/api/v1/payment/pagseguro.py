@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from pagseguro import PagSeguro
 
 from django.conf import settings
@@ -8,35 +10,46 @@ from autoservice.core.models import Config
 
 class Transcation:
 
-    host = 'http://45.132.242.190'
+    config = None
     use_shipping = False
+    host = 'http://45.132.242.190'
     sandbox = settings.PAGSEGURO_SANDBOX
     notification_url = reverse_lazy('api.v1:pag-notification')
 
     def __init__(self):
         self.pg = PagSeguro(email=settings.PAGSEGURO_EMAIL, token=settings.PAGSEGURO_TOKEN, config=self.get_config())
         self.pg.payment = {'mode': 'default'}
+        self.config = Config.objects.first()
 
     def set_senderHash(self, senderHash):
         self.senderHash = senderHash
 
+    def set_notification_url(self):
+        self.pg.notification_url = '{}{}'.format(self.host, self.notification_url)
+
     def set_sender(self, data):
         self.pg.sender = {
             "name": data.user.get_full_name(),
-            "area_code": data.phone[:2],
-            "phone": data.phone[2:],
             "email": data.user.email,
             "hash": self.senderHash,
-            "cpf": data.cpf,
-        }
-
-    def set_pre_approval(self, config):
-        self.pg.pre_approval = {
-            'charge': 'AUTO',
-            'name': 'Assinatura do Aplicativo Auto Service',
-            'details': 'Todo dia 10 de cada mês será cobrado o valor de R$ {}'.format(config.value),
-            'amount_per_payment': config.value,
-            'period': 'MONTHLY'
+            "phone": {
+                "areaCode": data.phone[:2],
+                "number": data.phone[2:],
+            },
+            "documents": [{
+                "type": "CPF",
+                "value": data.cpf
+            }],
+            'address': {
+                'street': data.address,
+                'number': data.number,
+                'complement': data.complement,
+                'district': data.district,
+                'city': data.city.name,
+                'state': data.city.state.uf,
+                'postalCode': data.zipcode,
+                'country': 'BRA'
+            }
         }
 
     def get_config(self):
@@ -45,48 +58,53 @@ class Transcation:
     def get_session(self):
         return self.pg.transparent_checkout_session()
 
+    def get_notification(self, code):
+        return self.pg.check_notification(code)
+
     def cancel(self, code):
         url = f'{self.pg.config.QUERY_TRANSACTION_URL}/cancels'
         self.pg.data.update({'transactionCode': code})
         return self.pg.post(url)
 
     def ticket(self, data):
-        self.pg.payment.update({'method': 'boleto'})
-        return self.checkout()
-
-    def get_notification(self, code):
-        return self.pg.check_notification(code)
+        date = datetime.now().date() + timedelta(days=self.config.trial_period)
+        self.set_notification_url()
+        self.pg.ticket = {
+            'firstDueDate': date.isoformat(),
+            'numberOfPayments': 1,
+            'amount': str(self.config.value),
+            'description': 'Assinatura do Aplicativo Auto Service',
+        }
+        return self.pg.generate_ticket()
 
     def credit_card(self, card, profile):
-        config = Config.objects.first()
+        self.set_notification_url()
+        self.pg.code = self.config.plan_code
         self.pg.payment.update({'method': 'creditCard'})
         self.pg.credit_card = {
-            'credit_card_token': card.get('card_token'),
-            'installment_quantity': 1,
-            'installment_value': config.value,
-            'no_interest_installment_quantity': config.no_interest_installment,
-
-            'card_holder_name': card.get('card_name'),
-            'card_holder_cpf': card.get('card_cpf'),
-
-            'billing_address_street': profile.address,
-            'billing_address_number': profile.number,
-            'billing_address_complement': profile.complement,
-            'billing_address_district': profile.district,
-            'billing_address_postal_code': profile.zipcode,
-            'billing_address_city': profile.city.name,
-            'billing_address_state': profile.city.state.uf,
+            'token': card.get('card_token'),
+            'holder': {
+                'name': card.get('card_name'),
+                'birthDate': card.get('card_birthdate'),
+                'documents': [{
+                    'type': 'CPF',
+                    'value': card.get('card_cpf')
+                }],
+                "phone": {
+                    "areaCode": profile.phone[:2],
+                    "number": profile.phone[2:],
+                }
+            }
         }
-        return self.checkout()
+        return self.pg.pre_approval_ask()
 
-    def checkout(self):
-        config = Config.objects.first()
-        self.pg.notification_url = '{}{}'.format(self.host, self.notification_url)
-        self.set_pre_approval(config)
-        self.pg.items = [{
-            "id": 1,
-            "description": 'Assinatura do Aplicativo Auto Service',
-            "amount": config.value,
-            "quantity": 1
-        }]
-        return self.pg.checkout(transparent=True)
+    def create_new_plan(self):
+        self.pg.pre_approval = {
+            'charge': 'AUTO',
+            'name': 'Assinatura do Aplicativo Auto Service',
+            'details': 'Todo mês será cobrado o valor de R$ {}'.format(self.config.value),
+            'amount_per_payment': self.config.value,
+            'trial_period_duration': self.config.trial_period,
+            'period': 'MONTHLY'
+        }
+        return self.pg.pre_approval_request()

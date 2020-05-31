@@ -33,4 +33,4 @@ itsdangerous
 django-cors-headers
 
 # PAGSEGURO
-pagseguro
+git+https://github.com/jhonifreitas/python-pagseguro#egg=pagseguro

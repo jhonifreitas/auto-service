@@ -5,7 +5,6 @@ from auditlog.models import AuditlogHistoryField
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 from autoservice.core import manager
 from autoservice.storage import get_storage_path
@@ -39,12 +38,11 @@ class Config(AbstractBaseModel):
         verbose_name = 'Geral'
         verbose_name_plural = 'Geral'
 
-    avaliation_days = models.PositiveSmallIntegerField(verbose_name='Dias de avaliação')
+    trial_period = models.PositiveSmallIntegerField(verbose_name='Dias de avaliação')
     value = models.DecimalField(verbose_name='Valor mensal', max_digits=6, decimal_places=2)
-    no_interest_installment = models.PositiveSmallIntegerField(
-        verbose_name='Número de Parcelas sem júros',
-        validators=[MinValueValidator(1), MaxValueValidator(18)]
-    )
+    plan_code = models.CharField(verbose_name='Código do plano', max_length=255)
+    plan_name = models.CharField(verbose_name='Nome do plano', max_length=255)
+    plan_description = models.TextField(verbose_name='Descrição do plano')
 
 
 class State(AbstractBaseModel):
@@ -75,6 +73,7 @@ class Service(AbstractBaseModel):
         ordering = ['name']
 
     name = models.CharField(verbose_name='Nome', max_length=255)
+    image = models.ImageField(verbose_name='Imagem', upload_to=get_service_file_path)
     icon = models.ImageField(verbose_name='Icone', upload_to=get_service_file_path)
 
 
