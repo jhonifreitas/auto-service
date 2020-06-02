@@ -16,6 +16,10 @@ def get_gallery_file_path(instance, filename):
     return get_storage_path(filename, 'gallery')
 
 
+def get_service_file_path(instance, filename):
+    return get_storage_path(filename, 'services')
+
+
 class Profile(AbstractBaseModel):
 
     class Meta:
@@ -55,11 +59,15 @@ class Profile(AbstractBaseModel):
 
     @property
     def get_zipcode_formated(self):
-        return ZipCode(self.zipcode).format()
+        if self.zipcode:
+            return ZipCode(self.zipcode).format()
+        return None
 
     @property
     def get_cpf_formated(self):
-        return CPF(self.cpf).format()
+        if self.cpf:
+            return CPF(self.cpf).format()
+        return None
 
     def __str__(self):
         return self.user.get_full_name()
@@ -96,9 +104,37 @@ class Service(AbstractBaseModel):
         (REQUESTED, 'Aguardando aprovação')
     ]
 
-    from_profile = models.ForeignKey(Profile, verbose_name='De', on_delete=models.CASCADE, related_name='service_from')
-    to_profile = models.ForeignKey(Profile, verbose_name='Para', on_delete=models.CASCADE, related_name='service_to')
+    category = models.ForeignKey(Category, verbose_name='Categoria', on_delete=models.CASCADE, related_name='services')
+    professional = models.ForeignKey(Profile, verbose_name='Profissional', on_delete=models.CASCADE,
+                                     related_name='professional_services')
+    client = models.ForeignKey(Profile, verbose_name='Cliente', on_delete=models.CASCADE,
+                               related_name='client_services')
+
+    zipcode = models.CharField(verbose_name='CEP', max_length=8)
+    city = models.ForeignKey(City, verbose_name='Cidade', on_delete=models.CASCADE, related_name='services')
+    address = models.CharField(verbose_name='Endereço', max_length=255)
+    number = models.CharField(verbose_name='Número', max_length=255)
+    district = models.CharField(verbose_name='Bairro', max_length=255)
+    complement = models.TextField(verbose_name='Complemento', null=True, blank=True)
+
+    date = models.DateField(verbose_name='Data')
+    time = models.CharField(verbose_name='Horário', max_length=255)
+    observation = models.TextField(verbose_name='Observação', null=True, blank=True)
     status = models.CharField(verbose_name='Status', choices=STATUS, max_length=255)
+
+    @property
+    def get_zipcode_formated(self):
+        return ZipCode(self.zipcode).format()
+
+
+class ServiceImage(AbstractBaseModel):
+
+    class Meta:
+        verbose_name = 'Imagem'
+        verbose_name_plural = 'Imagens'
+
+    service = models.ForeignKey(Service, verbose_name='Serviço', on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(verbose_name='Imagem', upload_to=get_service_file_path)
 
 
 class Review(AbstractBaseModel):

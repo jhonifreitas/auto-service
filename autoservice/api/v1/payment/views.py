@@ -51,7 +51,7 @@ class PaymentViewSet(viewsets.ViewSet):
                 return Response(
                     self.serializer_class_retrieve(profile, context=context).data, status=status.HTTP_200_OK)
             error = {
-                'error': 'Erro ao gerar pagamento!',
+                'error': 'Erro ao gerar pagamento, verifique se seus dados estão todos corretos!',
                 'pagseguro': result.errors
             }
             return Response(error, status=status.HTTP_400_BAD_REQUEST)

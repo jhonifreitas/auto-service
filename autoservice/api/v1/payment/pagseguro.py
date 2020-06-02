@@ -27,27 +27,27 @@ class Transcation:
     def set_notification_url(self):
         self.pg.notification_url = '{}{}'.format(self.host, self.notification_url)
 
-    def set_sender(self, data):
+    def set_sender(self, profile):
         self.pg.sender = {
-            "name": data.user.get_full_name(),
-            "email": data.user.email,
+            "name": profile.user.get_full_name(),
+            "email": profile.user.email,
             "hash": self.senderHash,
             "phone": {
-                "areaCode": data.phone[:2],
-                "number": data.phone[2:],
+                "areaCode": profile.phone[:2],
+                "number": profile.phone[2:],
             },
             "documents": [{
                 "type": "CPF",
-                "value": data.cpf
+                "value": profile.cpf
             }],
             'address': {
-                'street': data.address,
-                'number': data.number,
-                'complement': data.complement,
-                'district': data.district,
-                'city': data.city.name,
-                'state': data.city.state.uf,
-                'postalCode': data.zipcode,
+                'street': profile.address,
+                'number': profile.number,
+                'complement': profile.complement,
+                'district': profile.district,
+                'city': profile.city.name,
+                'state': profile.city.state.uf,
+                'postalCode': profile.zipcode,
                 'country': 'BRA'
             }
         }
@@ -73,7 +73,7 @@ class Transcation:
             'firstDueDate': date.isoformat(),
             'numberOfPayments': 1,
             'amount': str(self.config.value),
-            'description': 'Assinatura do Aplicativo Auto Service',
+            'description': self.config.plan_name,
         }
         return self.pg.generate_ticket()
 
@@ -85,10 +85,10 @@ class Transcation:
             'token': card.get('card_token'),
             'holder': {
                 'name': card.get('card_name'),
-                'birthDate': card.get('card_birthdate'),
+                'birthDate': profile.birthday.isoformat(),
                 'documents': [{
                     'type': 'CPF',
-                    'value': card.get('card_cpf')
+                    'value': profile.cpf
                 }],
                 "phone": {
                     "areaCode": profile.phone[:2],
@@ -101,8 +101,8 @@ class Transcation:
     def create_new_plan(self):
         self.pg.pre_approval = {
             'charge': 'AUTO',
-            'name': 'Assinatura do Aplicativo Auto Service',
-            'details': 'Todo mês será cobrado o valor de R$ {}'.format(self.config.value),
+            'name': self.config.plan_name,
+            'details': self.config.plan_description,
             'amount_per_payment': self.config.value,
             'trial_period_duration': self.config.trial_period,
             'period': 'MONTHLY'

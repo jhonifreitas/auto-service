@@ -66,28 +66,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         return instance
 
 
-class ReviewSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.Review
-        fields = ['from_profile', 'to_profile', 'note', 'text']
-
-
-class ReviewSerializerRetrieve(serializers.ModelSerializer):
-
-    from_profile = serializers.SerializerMethodField()
-
-    class Meta:
-        model = models.Review
-        fields = ['id', 'from_profile', 'note', 'text', 'updated_at']
-
-    def get_from_profile(self, obj):
-        return {
-            'id': obj.from_profile.id,
-            'name': obj.from_profile.user.get_full_name()
-        }
-
-
 class ProfileCategorySerializer(serializers.ModelSerializer):
 
     price = serializers.CharField(max_length=14, required=False)
@@ -116,22 +94,6 @@ class ProfileCategorySerializerRetrieve(serializers.ModelSerializer):
         fields = ['id', 'category', 'type_pay', 'price']
 
 
-class GallerySerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.Gallery
-        fields = ['profile', 'category', 'image']
-
-
-class GallerySerializerRetrieve(serializers.ModelSerializer):
-
-    category = CategorySerializerRetrieve()
-
-    class Meta:
-        model = models.Gallery
-        fields = ['id', 'category', 'image']
-
-
 class AddressRetrieve(serializers.Serializer):
 
     zipcode = serializers.SerializerMethodField()
@@ -153,14 +115,12 @@ class ProfileSerializerRetrieve(serializers.ModelSerializer):
     phone = serializers.SerializerMethodField()
     cpf = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
-    reviews = ReviewSerializerRetrieve(many=True, source='review_to')
     categories = ProfileCategorySerializerRetrieve(many=True)
-    gallery = GallerySerializerRetrieve(many=True)
 
     class Meta:
         model = models.Profile
         fields = ['id', 'first_name', 'last_name', 'cpf', 'types', 'email', 'phone', 'photo', 'rating', 'birthday',
-                  'address', 'reviews', 'categories', 'gallery']
+                  'address', 'categories']
 
     def get_first_name(self, obj):
         return obj.user.first_name
@@ -179,3 +139,91 @@ class ProfileSerializerRetrieve(serializers.ModelSerializer):
 
     def get_address(self, obj):
         return AddressRetrieve(obj).data
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Review
+        fields = ['from_profile', 'to_profile', 'note', 'text']
+
+
+class ReviewSerializerRetrieve(serializers.ModelSerializer):
+
+    from_profile = ProfileSerializerRetrieve()
+
+    class Meta:
+        model = models.Review
+        fields = ['id', 'from_profile', 'note', 'text']
+
+
+class GallerySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Gallery
+        fields = ['profile', 'category', 'image']
+
+
+class GallerySerializerRetrieve(serializers.ModelSerializer):
+
+    category = CategorySerializerRetrieve()
+
+    class Meta:
+        model = models.Gallery
+        fields = ['id', 'category', 'image']
+
+
+class ServiceImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.ServiceImage
+        fields = ['image']
+
+
+class ServiceSerializer(serializers.ModelSerializer):
+
+    date = serializers.CharField()
+    zipcode = serializers.CharField(max_length=9)
+    images = ServiceImageSerializer(many=True, required=False)
+    status = serializers.ChoiceField(choices=models.Service.STATUS, default=models.Service.REQUESTED)
+
+    class Meta:
+        model = models.Service
+        fields = ['category', 'professional', 'client', 'zipcode', 'city', 'address', 'number', 'district',
+                  'complement', 'date', 'time', 'observation', 'images', 'status']
+
+    def validate_zipcode(self, value):
+        return ZipCode(value).cleaning()
+
+    def validate_date(self, value):
+        return value[:10]
+
+    def create(self, validated_data):
+        images = validated_data.pop('images', [])
+        instance = self.Meta.model._default_manager.create(**validated_data)
+
+        for image in images:
+            models.ServiceImage.objects.create(service=instance, image=image.get('image'))
+        return instance
+
+
+class ServiceSerializerRetrieve(serializers.ModelSerializer):
+
+    category = CategorySerializerRetrieve()
+    professional = ProfileSerializerRetrieve()
+    client = ProfileSerializerRetrieve()
+    zipcode = serializers.SerializerMethodField()
+    city = CitySerializerRetrieve()
+    images = ServiceImageSerializer(many=True)
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = models.Service
+        fields = ['id', 'category', 'professional', 'client', 'zipcode', 'city', 'address', 'number', 'district',
+                  'complement', 'date', 'time', 'observation', 'images', 'status']
+
+    def get_zipcode(self, obj):
+        return obj.get_zipcode_formated
+
+    def get_status(self, obj):
+        return obj.get_status_display()

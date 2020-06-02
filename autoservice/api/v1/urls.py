@@ -13,6 +13,7 @@ app_name = 'api.v1'
 router = routers.SimpleRouter()
 router.register('review', customer_views.ReviewViewSet, basename='review')
 router.register('gallery', customer_views.GalleryViewSet, basename='gallery')
+router.register('service', customer_views.ServiceViewSet, basename='service')
 router.register('profile/category', customer_views.ProfileCategoryViewSet, basename='profile-category')
 
 urlpatterns = [
@@ -39,6 +40,16 @@ urlpatterns = [
     path('profile/', customer_views.ProfileViewSet.as_view({'patch': 'patch'}), name='profile-update'),
     path('professional/<int:pk>/detail/', customer_views.ProfessionalViewSet.as_view({'get': 'retrieve'}),
          name='professional-detail'),
+
+    # SERVICE
+    path('service/requested/', customer_views.ServiceViewSet.as_view({'get': 'requested'}),
+         name='service-requested-list'),
+    path('service/waiting/', customer_views.ServiceViewSet.as_view({'get': 'waiting'}),
+         name='service-waiting-list'),
+    path('service/approved/', customer_views.ServiceViewSet.as_view({'get': 'approved'}),
+         name='service-approved-list'),
+    path('service/history/', customer_views.ServiceViewSet.as_view({'get': 'history'}),
+         name='service-history-list'),
 
     path('', include(router.urls)),
 ]
