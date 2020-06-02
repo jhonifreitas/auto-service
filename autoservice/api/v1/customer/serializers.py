@@ -11,8 +11,8 @@ from autoservice.api.v1.core.serializers import (CitySerializerRetrieve, Categor
 class ProfileSerializer(serializers.ModelSerializer):
 
     phone = serializers.CharField(max_length=15)
-    cpf = serializers.CharField(max_length=14)
-    zipcode = serializers.CharField(max_length=9)
+    cpf = serializers.CharField(max_length=14, required=False)
+    zipcode = serializers.CharField(max_length=9, required=False)
     name = serializers.CharField(max_length=255)
     email = serializers.EmailField()
     birthday = serializers.CharField(required=False)
@@ -20,7 +20,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Profile
-        fields = ['name', 'email', 'cpf', 'photo', 'city', 'phone', 'birthday', 'about', 'zipcode', 'address',
+        fields = ['name', 'email', 'cpf', 'photo', 'city', 'phone', 'birthday', 'zipcode', 'address',
                   'district', 'number', 'complement', 'password']
 
     def validate_phone(self, value):
@@ -99,6 +99,12 @@ class ProfileCategorySerializer(serializers.ModelSerializer):
     def validate_price(self, value):
         return value.replace('.', '').replace(',', '.')
 
+    def validate(self, data):
+        queryset = self.Meta.model.objects.filter(profile=data.get('profile'), category=data.get('category'))
+        if not self.instance and queryset.exists():
+            raise serializers.ValidationError('Categoria já cadastrada!', code='invalid')
+        return data
+
 
 class ProfileCategorySerializerRetrieve(serializers.ModelSerializer):
 
@@ -126,24 +132,41 @@ class GallerySerializerRetrieve(serializers.ModelSerializer):
         fields = ['id', 'category', 'image']
 
 
+class AddressRetrieve(serializers.Serializer):
+
+    zipcode = serializers.SerializerMethodField()
+    district = serializers.CharField()
+    city = CitySerializerRetrieve()
+    address = serializers.CharField()
+    number = serializers.CharField()
+    complement = serializers.CharField()
+
+    def get_zipcode(self, obj):
+        return obj.get_zipcode_formated
+
+
 class ProfileSerializerRetrieve(serializers.ModelSerializer):
 
-    name = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     phone = serializers.SerializerMethodField()
     cpf = serializers.SerializerMethodField()
-    city = CitySerializerRetrieve()
+    address = serializers.SerializerMethodField()
     reviews = ReviewSerializerRetrieve(many=True, source='review_to')
     categories = ProfileCategorySerializerRetrieve(many=True)
     gallery = GallerySerializerRetrieve(many=True)
 
     class Meta:
         model = models.Profile
-        fields = ['id', 'name', 'cpf', 'types', 'email', 'city', 'phone', 'photo', 'rating', 'birthday', 'zipcode',
-                  'address', 'district', 'number', 'complement', 'reviews', 'categories', 'gallery']
+        fields = ['id', 'first_name', 'last_name', 'cpf', 'types', 'email', 'phone', 'photo', 'rating', 'birthday',
+                  'address', 'reviews', 'categories', 'gallery']
 
-    def get_name(self, obj):
-        return obj.user.get_full_name()
+    def get_first_name(self, obj):
+        return obj.user.first_name
+
+    def get_last_name(self, obj):
+        return obj.user.last_name
 
     def get_email(self, obj):
         return obj.user.email
@@ -153,3 +176,6 @@ class ProfileSerializerRetrieve(serializers.ModelSerializer):
 
     def get_cpf(self, obj):
         return obj.get_cpf_formated
+
+    def get_address(self, obj):
+        return AddressRetrieve(obj).data

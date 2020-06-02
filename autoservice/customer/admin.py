@@ -16,6 +16,17 @@ class ReviewInline(admin.TabularInline):
         return False
 
 
+class ServiceInline(admin.TabularInline):
+
+    model = models.Service
+    can_delete = False
+    fk_name = 'to_profile'
+    readonly_fields = ['from_profile', 'status']
+
+    def has_add_permission(self, request):
+        return False
+
+
 class PayRequestInline(admin.TabularInline):
 
     model = models.PayRequest
@@ -54,7 +65,7 @@ class ProfileAdmin(ImageWidgetAdmin):
 
     list_display = ['id', 'user', 'get_photo', 'city', 'types', 'created_at']
     list_display_links = ['id', 'user']
-    inlines = [GalleryInline, ReviewInline, PayRequestInline]
+    inlines = [ServiceInline, PayRequestInline, GalleryInline, ReviewInline]
     image_fields = ['photo']
 
     def get_photo(self, obj):

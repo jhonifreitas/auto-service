@@ -82,9 +82,9 @@ class CategoryAdmin(ImageWidgetAdmin):
     image_fields = ['icon']
 
     def get_image(self, obj):
-        return thumbnail(obj.image)
+        return thumbnail(obj.image, size='col-md-6')
     get_image.short_description = 'Imagem'
 
     def get_icon(self, obj):
-        return thumbnail(obj.icon)
+        return thumbnail(obj.icon, size='col-md-12')
     get_icon.short_description = 'Icone'

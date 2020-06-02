@@ -58,7 +58,7 @@ class ProfessionalViewSet(ProfileViewSet):
             types=self.serializer_class_retrieve.Meta.model.PROFESSIONAL, expiration__gte=datetime.now().date(),
             categories__category__id=self.kwargs.get('category_id'))
 
-    def list(self, request, service_id):
+    def list(self, request, category_id):
         context = {'request': request}
         return Response(self.serializer_class_retrieve(
             self.get_queryset(), many=True, context=context).data, status=status.HTTP_200_OK)

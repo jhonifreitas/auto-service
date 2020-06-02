@@ -34,7 +34,7 @@ urlpatterns = [
     path('type-pay/', core_views.TypePayViewSet.as_view({'get': 'list'}), name='type-pay-list'),
 
     # CUSTOMER
-    path('service/<int:service_id>/professional/', customer_views.ProfessionalViewSet.as_view({'get': 'list'}),
+    path('category/<int:category_id>/professional/', customer_views.ProfessionalViewSet.as_view({'get': 'list'}),
          name='professional-list'),
     path('profile/', customer_views.ProfileViewSet.as_view({'patch': 'patch'}), name='profile-update'),
     path('professional/<int:pk>/detail/', customer_views.ProfessionalViewSet.as_view({'get': 'retrieve'}),

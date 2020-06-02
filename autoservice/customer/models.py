@@ -3,8 +3,8 @@ from auditlog.registry import auditlog
 from django.db import models
 from django.contrib.auth.models import User
 
-from autoservice.core.utils import Phone, CPF
 from autoservice.storage import get_storage_path
+from autoservice.core.utils import Phone, CPF, ZipCode
 from autoservice.core.models import AbstractBaseModel, City, Category, TypePay
 
 
@@ -39,7 +39,8 @@ class Profile(AbstractBaseModel):
     cpf = models.CharField(verbose_name='CPF', max_length=11, null=True, blank=True)
 
     zipcode = models.CharField(verbose_name='CEP', max_length=8, null=True, blank=True)
-    city = models.ForeignKey(City, verbose_name='Cidade', on_delete=models.CASCADE, related_name='profiles')
+    city = models.ForeignKey(City, verbose_name='Cidade', on_delete=models.CASCADE, related_name='profiles',
+                             null=True, blank=True)
     address = models.CharField(verbose_name='Endereço', max_length=255, null=True, blank=True)
     number = models.CharField(verbose_name='Número', max_length=255, null=True, blank=True)
     district = models.CharField(verbose_name='Bairro', max_length=255, null=True, blank=True)
@@ -51,6 +52,10 @@ class Profile(AbstractBaseModel):
     @property
     def get_phone_formated(self):
         return Phone(self.phone).format()
+
+    @property
+    def get_zipcode_formated(self):
+        return ZipCode(self.zipcode).format()
 
     @property
     def get_cpf_formated(self):
@@ -88,7 +93,7 @@ class Service(AbstractBaseModel):
         (DONE, 'Realizado'),
         (RECUSED, 'Recusado'),
         (APPROVED, 'Aprovado'),
-        (REQUESTED, 'Solicitado')
+        (REQUESTED, 'Aguardando aprovação')
     ]
 
     from_profile = models.ForeignKey(Profile, verbose_name='De', on_delete=models.CASCADE, related_name='service_from')
