@@ -20,7 +20,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Profile
-        fields = ['name', 'email', 'cpf', 'photo', 'city', 'phone', 'birthday', 'zipcode', 'address',
+        fields = ['name', 'email', 'cpf', 'photo', 'city', 'phone', 'birthday', 'lat', 'lng', 'zipcode', 'address',
                   'district', 'number', 'complement', 'password']
 
     def validate_phone(self, value):
@@ -96,6 +96,8 @@ class ProfileCategorySerializerRetrieve(serializers.ModelSerializer):
 
 class AddressRetrieve(serializers.Serializer):
 
+    lat = serializers.FloatField()
+    lng = serializers.FloatField()
     zipcode = serializers.SerializerMethodField()
     district = serializers.CharField()
     city = CitySerializerRetrieve()
@@ -189,8 +191,8 @@ class ServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Service
-        fields = ['category', 'professional', 'client', 'zipcode', 'city', 'address', 'number', 'district',
-                  'complement', 'date', 'time', 'observation', 'images', 'status']
+        fields = ['category', 'professional', 'client', 'lat', 'lng', 'zipcode', 'city', 'address', 'number',
+                  'district', 'complement', 'date', 'time', 'observation', 'images', 'status', 'text_cancel']
 
     def validate_zipcode(self, value):
         return ZipCode(value).cleaning()
@@ -219,11 +221,11 @@ class ServiceSerializerRetrieve(serializers.ModelSerializer):
 
     class Meta:
         model = models.Service
-        fields = ['id', 'category', 'professional', 'client', 'zipcode', 'city', 'address', 'number', 'district',
-                  'complement', 'date', 'time', 'observation', 'images', 'status']
+        fields = ['id', 'category', 'professional', 'client', 'lat', 'lng', 'zipcode', 'city', 'address', 'number',
+                  'district', 'complement', 'date', 'time', 'observation', 'images', 'status']
 
     def get_zipcode(self, obj):
         return obj.get_zipcode_formated
 
     def get_status(self, obj):
-        return obj.get_status_display()
+        return {'text': obj.get_status_display(), 'value': obj.status}

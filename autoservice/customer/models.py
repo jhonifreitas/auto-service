@@ -42,6 +42,8 @@ class Profile(AbstractBaseModel):
     birthday = models.DateField(verbose_name='Data de Nascimento', null=True, blank=True)
     cpf = models.CharField(verbose_name='CPF', max_length=11, null=True, blank=True)
 
+    lat = models.FloatField(verbose_name='Latitude', max_length=255)
+    lng = models.FloatField(verbose_name='Longitude', max_length=255)
     zipcode = models.CharField(verbose_name='CEP', max_length=8, null=True, blank=True)
     city = models.ForeignKey(City, verbose_name='Cidade', on_delete=models.CASCADE, related_name='profiles',
                              null=True, blank=True)
@@ -111,6 +113,8 @@ class Service(AbstractBaseModel):
                                related_name='client_services')
 
     zipcode = models.CharField(verbose_name='CEP', max_length=8)
+    lat = models.FloatField(verbose_name='Latitude', max_length=255)
+    lng = models.FloatField(verbose_name='Longitude', max_length=255)
     city = models.ForeignKey(City, verbose_name='Cidade', on_delete=models.CASCADE, related_name='services')
     address = models.CharField(verbose_name='Endereço', max_length=255)
     number = models.CharField(verbose_name='Número', max_length=255)
@@ -121,6 +125,7 @@ class Service(AbstractBaseModel):
     time = models.CharField(verbose_name='Horário', max_length=255)
     observation = models.TextField(verbose_name='Observação', null=True, blank=True)
     status = models.CharField(verbose_name='Status', choices=STATUS, max_length=255)
+    text_cancel = models.TextField(verbose_name='Motivo Cancelamento', null=True, blank=True)
 
     @property
     def get_zipcode_formated(self):

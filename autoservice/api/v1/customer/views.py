@@ -174,6 +174,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
             queryset = self.request.user.profile.professional_services.all()
         else:
             queryset = self.request.user.profile.client_services.all()
+        queryset.filter(date__lt=datetime.now().date()).update(status=self.serializer_class.Meta.model.DONE)
         return queryset
 
     def retrieve(self, request, pk):
@@ -190,26 +191,18 @@ class ServiceViewSet(viewsets.ModelViewSet):
             return Response(self.serializer_class_retrieve(obj, context=context).data, status=status.HTTP_200_OK)
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, pk):
-        serializer = self.serializer_class(instance=self.get_object(), data=request.data, partial=True)
-        if serializer.is_valid():
-            obj = serializer.save()
-            context = {'request': request}
-            return Response(self.serializer_class_retrieve(obj, context=context).data, status=status.HTTP_200_OK)
-        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
     def requested(self, request):
         context = {'request': request}
-        queryset = self.get_queryset().filter(status=self.serializer_class.Meta.model.REQUESTED)
+        queryset = self.get_queryset().filter(
+            Q(status=self.serializer_class.Meta.model.REQUESTED) |
+            Q(status=self.serializer_class.Meta.model.APPROVED)
+        )
         return Response(
             self.serializer_class_retrieve(queryset, many=True, context=context).data, status=status.HTTP_200_OK)
 
     def waiting(self, request):
         context = {'request': request}
-        queryset = self.get_queryset().filter(
-            Q(status=self.serializer_class.Meta.model.REQUESTED) |
-            Q(status=self.serializer_class.Meta.model.RECUSED)
-        )
+        queryset = self.get_queryset().filter(status=self.serializer_class.Meta.model.REQUESTED)
         return Response(
             self.serializer_class_retrieve(queryset, many=True, context=context).data, status=status.HTTP_200_OK)
 
