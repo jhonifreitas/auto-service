@@ -20,6 +20,7 @@ urlpatterns = [
     # AUTH
     path('login/', auth_views.LoginViewSet.as_view({'post': 'post'}), name='login'),
     path('register/', customer_views.ProfileViewSet.as_view({'post': 'create'}), name='register'),
+    path('password-reset/', auth_views.PasswordResetViewSet.as_view({'post': 'post'}), name='password-reset'),
 
     # PAGSEGURO
     path('pagseguro/pay/', payment_views.PaymentViewSet.as_view({'post': 'pay'}), name='pag-pay'),
@@ -35,10 +36,9 @@ urlpatterns = [
     path('type-pay/', core_views.TypePayViewSet.as_view({'get': 'list'}), name='type-pay-list'),
 
     # CUSTOMER
-    path('category/<int:category_id>/professional/', customer_views.ProfessionalViewSet.as_view({'get': 'list'}),
-         name='professional-list'),
     path('profile/', customer_views.ProfileViewSet.as_view({'patch': 'patch'}), name='profile-update'),
-    path('professional/<int:pk>/detail/', customer_views.ProfessionalViewSet.as_view({'get': 'retrieve'}),
+    path('professional/', customer_views.ProfessionalViewSet.as_view({'get': 'list'}), name='professional-list'),
+    path('professional/<int:pk>/', customer_views.ProfessionalViewSet.as_view({'get': 'retrieve'}),
          name='professional-detail'),
 
     # SERVICE

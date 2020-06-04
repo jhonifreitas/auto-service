@@ -36,14 +36,15 @@ class Profile(AbstractBaseModel):
     ]
 
     user = models.OneToOneField(User, verbose_name='Usuário', on_delete=models.CASCADE, related_name='profile')
+    onesignal = models.CharField(verbose_name='Onesignal', max_length=255)
     types = models.CharField(verbose_name='Tipo', max_length=255, choices=TYPES, default=COMMON)
     phone = models.CharField(verbose_name='Telefone', max_length=11)
     photo = models.ImageField(verbose_name='Foto', upload_to=get_profile_file_path, null=True, blank=True)
     birthday = models.DateField(verbose_name='Data de Nascimento', null=True, blank=True)
     cpf = models.CharField(verbose_name='CPF', max_length=11, null=True, blank=True)
 
-    lat = models.FloatField(verbose_name='Latitude', max_length=255)
-    lng = models.FloatField(verbose_name='Longitude', max_length=255)
+    lat = models.FloatField(verbose_name='Latitude', max_length=255, null=True, blank=True)
+    lng = models.FloatField(verbose_name='Longitude', max_length=255, null=True, blank=True)
     zipcode = models.CharField(verbose_name='CEP', max_length=8, null=True, blank=True)
     city = models.ForeignKey(City, verbose_name='Cidade', on_delete=models.CASCADE, related_name='profiles',
                              null=True, blank=True)
@@ -112,9 +113,9 @@ class Service(AbstractBaseModel):
     client = models.ForeignKey(Profile, verbose_name='Cliente', on_delete=models.CASCADE,
                                related_name='client_services')
 
+    lat = models.FloatField(verbose_name='Latitude', max_length=255, null=True, blank=True)
+    lng = models.FloatField(verbose_name='Longitude', max_length=255, null=True, blank=True)
     zipcode = models.CharField(verbose_name='CEP', max_length=8)
-    lat = models.FloatField(verbose_name='Latitude', max_length=255)
-    lng = models.FloatField(verbose_name='Longitude', max_length=255)
     city = models.ForeignKey(City, verbose_name='Cidade', on_delete=models.CASCADE, related_name='services')
     address = models.CharField(verbose_name='Endereço', max_length=255)
     number = models.CharField(verbose_name='Número', max_length=255)

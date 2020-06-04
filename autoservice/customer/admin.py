@@ -67,7 +67,7 @@ class ServiceImageInline(admin.TabularInline):
 @admin.register(models.Profile)
 class ProfileAdmin(ImageWidgetAdmin):
 
-    list_display = ['id', 'user', 'get_photo', 'city', 'types', 'created_at']
+    list_display = ['id', 'user', 'get_photo', 'city', 'types', 'expiration', 'created_at']
     list_display_links = ['id', 'user']
     inlines = [PayRequestInline, GalleryInline, ReviewInline]
     image_fields = ['photo']

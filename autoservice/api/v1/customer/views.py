@@ -49,25 +49,41 @@ class ProfileViewSet(viewsets.ViewSet):
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ProfessionalViewSet(ProfileViewSet):
+class ProfessionalViewSet(viewsets.GenericViewSet):
+
+    serializer_class = serializers.ProfileSerializerRetrieve
 
     def get_object(self):
-        return get_object_or_404(self.serializer_class_retrieve.Meta.model, pk=self.kwargs.get('pk'))
+        return get_object_or_404(self.serializer_class.Meta.model, pk=self.kwargs.get('pk'))
 
     def get_queryset(self):
-        return self.serializer_class_retrieve.Meta.model.objects.filter(
-            types=self.serializer_class_retrieve.Meta.model.PROFESSIONAL, expiration__gte=datetime.now().date(),
-            categories__category__id=self.kwargs.get('category_id'))
+        return self.serializer_class.Meta.model.objects.filter(
+            types=self.serializer_class.Meta.model.PROFESSIONAL, expiration__gte=datetime.now().date())
 
-    def list(self, request, category_id):
+    def list(self, request):
         context = {'request': request}
-        return Response(self.serializer_class_retrieve(
-            self.get_queryset(), many=True, context=context).data, status=status.HTTP_200_OK)
+        search = request.GET.get('search')
+        category_id = request.GET.get('category_id')
+        queryset = self.get_queryset()
+        if category_id:
+            queryset = queryset.filter(categories__category__id=category_id)
+        if search:
+            search = search.lower()
+            queryset = queryset.filter(
+                Q(categories__category__name__icontains=search) |
+                Q(user__first_name__icontains=search) |
+                Q(user__last_name__icontains=search) |
+                Q(categories__category__hashtags__icontains=search)
+            )
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        return Response(self.serializer_class(queryset, many=True, context=context).data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk):
         context = {'request': request}
-        return Response(self.serializer_class_retrieve(
-            self.get_object(), context=context).data, status=status.HTTP_200_OK)
+        return Response(self.serializer_class(self.get_object(), context=context).data, status=status.HTTP_200_OK)
 
 
 class ProfileCategoryViewSet(viewsets.ModelViewSet):
@@ -214,6 +230,6 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
     def history(self, request):
         context = {'request': request}
-        queryset = self.get_queryset().filter(status=self.serializer_class.Meta.model.DONE)
+        queryset = self.get_queryset().filter(status=self.serializer_class.Meta.model.DONE)[:30]
         return Response(
             self.serializer_class_retrieve(queryset, many=True, context=context).data, status=status.HTTP_200_OK)

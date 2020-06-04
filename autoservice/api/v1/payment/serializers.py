@@ -24,7 +24,6 @@ class PayRequestSerializer(serializers.Serializer):
         validated_data.pop('card_token')
         validated_data.pop('card_number')
         validated_data.pop('card_name')
-        validated_data.pop('card_cpf')
         validated_data.pop('card_month')
         validated_data.pop('card_year')
         validated_data.pop('card_cvv')

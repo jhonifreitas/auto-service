@@ -19,9 +19,8 @@ class TokenAuthenticate(BasicAuthentication):
     ALLOWED_PATHS = [
         'login',
         'register',
-        'city-list',
-        'state-list',
-        'pag-notification'
+        'password-reset',
+        'pag-notification',
     ]
 
     def allowed_path(self, request):

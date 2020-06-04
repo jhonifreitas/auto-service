@@ -75,6 +75,7 @@ class Category(AbstractBaseModel):
     name = models.CharField(verbose_name='Nome', max_length=255)
     image = models.ImageField(verbose_name='Imagem', upload_to=get_category_file_path)
     icon = models.ImageField(verbose_name='Icone', upload_to=get_category_file_path)
+    hashtags = models.TextField(verbose_name='Hashtags', null=True, blank=True)
 
 
 class TypePay(AbstractBaseModel):

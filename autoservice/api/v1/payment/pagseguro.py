@@ -85,7 +85,7 @@ class Transcation:
             'token': card.get('card_token'),
             'holder': {
                 'name': card.get('card_name'),
-                'birthDate': profile.birthday.isoformat(),
+                'birthDate': profile.birthday.strftime('%d/%m/%Y'),
                 'documents': [{
                     'type': 'CPF',
                     'value': profile.cpf

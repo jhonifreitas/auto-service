@@ -79,7 +79,7 @@ class CategoryAdmin(ImageWidgetAdmin):
 
     list_display = ['id', 'name', 'get_image', 'get_icon', 'updated_at', 'created_at']
     list_display_links = ['id', 'name']
-    image_fields = ['icon']
+    image_fields = ['image', 'icon']
 
     def get_image(self, obj):
         return thumbnail(obj.image, size='col-md-6')

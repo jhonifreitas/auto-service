@@ -17,6 +17,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
 
 admin.site.site_header = 'Painel Administrativo'
 admin.site.site_title = 'Painel Administrativo'
@@ -24,6 +25,12 @@ admin.site.index_title = 'Administração'
 
 urlpatterns = [
     path('', admin.site.urls),
+
+    # PASSWORD RESET
+    path('resetar-senha/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path('resetar-senha/concluido/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('nova-senha/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('nova-senha/concluido/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     # API
     path('api/v1/', include('autoservice.api.v1.urls', namespace='api-v1')),

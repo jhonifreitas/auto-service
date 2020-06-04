@@ -21,7 +21,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Profile
         fields = ['name', 'email', 'cpf', 'photo', 'city', 'phone', 'birthday', 'lat', 'lng', 'zipcode', 'address',
-                  'district', 'number', 'complement', 'password']
+                  'district', 'number', 'complement', 'password', 'onesignal']
 
     def validate_phone(self, value):
         return Phone(value).cleaning()
@@ -32,12 +32,17 @@ class ProfileSerializer(serializers.ModelSerializer):
     def validate_zipcode(self, value):
         return ZipCode(value).cleaning()
 
+    def validate_birthday(self, value):
+        return value[:10]
+
+    def validate(self, data):
+        if self.instance and User.objects.filter(username=data.get('email')).exclude(id=self.instance.user.id).exists():
+            raise serializers.ValidationError('Email já cadastrado!', code='invalid')
+        return data
+
     def get_first_name(self, name):
         list_name = name.split(' ')
         return list_name[0]
-
-    def validate_birthday(self, value):
-        return value[:10]
 
     def get_last_name(self, name):
         list_name = name.split(' ')
@@ -59,9 +64,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)
         name = validated_data.get('name')
+        email = validated_data.get('email')
         if name:
             instance.user.fisrt_name = self.get_first_name(name)
             instance.user.last_name = self.get_last_name(name)
+            instance.user.email = email
+            instance.user.username = email
             instance.user.save()
         return instance
 
@@ -163,16 +171,14 @@ class GallerySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Gallery
-        fields = ['profile', 'category', 'image']
+        fields = ['profile', 'image']
 
 
 class GallerySerializerRetrieve(serializers.ModelSerializer):
 
-    category = CategorySerializerRetrieve()
-
     class Meta:
         model = models.Gallery
-        fields = ['id', 'category', 'image']
+        fields = ['id', 'image']
 
 
 class ServiceImageSerializer(serializers.ModelSerializer):

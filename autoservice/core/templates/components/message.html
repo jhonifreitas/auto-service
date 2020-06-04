@@ -1,0 +1,19 @@
+<div class="box-alerts">
+  {% if messages %}
+    {% for message in messages %}
+    <div class="alert{% if message.tags %} bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}{% endif %}">
+      <p class="text-white mb-0">{{ message|safe }}</p>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="alert bg-danger" style="display: none;">
+      <p class="text-white mb-0">Mensagem de erro!</p>
+    </div>
+    <div class="alert bg-warning" style="display: none;">
+      <p class="text-dark mb-0">Mensagem de aviso!</p>
+    </div>
+    <div class="alert bg-success" style="display: none;">
+      <p class="text-white mb-0">Mensagem de sucesso!</p>
+    </div>
+  {% endif %}
+</div>
