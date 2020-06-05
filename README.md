@@ -1,11 +1,3 @@
-# Como usar
-
-## LINUX
-curl -L https://raw.githubusercontent.com/cosmun-softwares/django-boilerplate/api/setup.sh | bash -s <autoservice>
-
-## MAC
-curl -L https://raw.githubusercontent.com/cosmun-softwares/django-boilerplate/api/setup.sh | bash -s <autoservice> -s osx
-
 # <README.md>
 
 ## Como desenvolver?
@@ -20,7 +12,7 @@ curl -L https://raw.githubusercontent.com/cosmun-softwares/django-boilerplate/ap
 
 ```console
 git <git url>
-cd autoservice
+cd gojob
 virtualenv env --python=python3 # python 3.6 ou mais atual
 source env/bin/activate
 pip install -r requirements_dev.txt
