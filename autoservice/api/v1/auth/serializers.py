@@ -11,6 +11,7 @@ from autoservice.api.v1.customer.serializers import ProfileSerializerRetrieve
 
 class LoginSerializer(serializers.Serializer):
 
+    onesignal = serializers.CharField(max_length=255, required=False)
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=255)
 
@@ -32,8 +33,13 @@ class LoginSerializer(serializers.Serializer):
                                   'password': self.validated_data.get('password')})
         return b64encode(token)
 
+    def set_onesignal(self):
+        self.profile.onesignal = self.validated_data.get('onesignal')
+        self.profile.save()
+
     def get_data(self, request):
         context = {'request': request}
+        self.set_onesignal()
         data = {
             'token': self.get_token(),
             'profile': ProfileSerializerRetrieve(self.profile, context=context).data

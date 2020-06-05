@@ -1,9 +1,12 @@
+from datetime import datetime
+
 from rest_framework import serializers
 
 from django.contrib.auth.models import User
 
 from autoservice.customer import models
 from autoservice.core.utils import Phone, ZipCode, CPF
+from autoservice.core.push_notification import PushNotification
 from autoservice.api.v1.core.serializers import (CitySerializerRetrieve, CategorySerializerRetrieve,
                                                  TypePaySerializerRetrieve)
 
@@ -36,7 +39,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         return value[:10]
 
     def validate(self, data):
-        if self.instance and User.objects.filter(username=data.get('email')).exclude(id=self.instance.user.id).exists():
+        email = data.get('email')
+        if self.instance and User.objects.filter(username=email).exclude(id=self.instance.user.id).exists():
             raise serializers.ValidationError('Email já cadastrado!', code='invalid')
         return data
 
@@ -190,10 +194,19 @@ class ServiceImageSerializer(serializers.ModelSerializer):
 
 class ServiceSerializer(serializers.ModelSerializer):
 
+    CHOICES = [
+        (models.Service.DONE, 'Realizado'),
+        (models.Service.APPROVED, 'Aprovado'),
+        (models.Service.CANCELED, 'Cancelado'),
+        (models.ServiceProfessional.RECUSED, 'Recusado'),
+        (models.Service.REQUESTED, 'Aguardando aprovação')
+    ]
+
     date = serializers.CharField()
     zipcode = serializers.CharField(max_length=9)
     images = ServiceImageSerializer(many=True, required=False)
-    status = serializers.ChoiceField(choices=models.Service.STATUS, default=models.Service.REQUESTED)
+    status = serializers.ChoiceField(choices=CHOICES, default=models.Service.REQUESTED)
+    text_cancel = serializers.CharField(required=False)
 
     class Meta:
         model = models.Service
@@ -210,9 +223,52 @@ class ServiceSerializer(serializers.ModelSerializer):
         images = validated_data.pop('images', [])
         instance = self.Meta.model._default_manager.create(**validated_data)
 
+        models.ServiceProfessional.objects.create(service=instance, professional=instance.professional)
         for image in images:
             models.ServiceImage.objects.create(service=instance, image=image.get('image'))
         return instance
+
+    def update(self, instance, validated_data):
+        status = validated_data.get('status')
+        text_cancel = validated_data.get('text_cancel')
+
+        if status and status != models.Service.CANCELED:
+            models.ServiceProfessional.objects.filter(
+                service=instance, professional=instance.professional
+            ).update(status=status, observation=text_cancel)
+
+        if status == models.ServiceProfessional.RECUSED:
+            validated_data.pop('status')
+
+            professionals = models.ServiceProfessional.objects.filter(
+                service=instance.id).values_list('professional_id')
+            queryset = models.Profile.objects.filter(
+                types=models.Profile.PROFESSIONAL, expiration__gte=datetime.now().date(),
+                categories__category=instance.category).exclude(pk__in=professionals)
+
+            title = 'Serviço Recusado'
+            message = message = 'O serviço do dia {} {}, foi recusado. '.format(
+                instance.date.strftime('%d/%m/%Y'), instance.time)
+
+            if queryset.exists():
+                status = models.Service.REQUESTED
+                professional = queryset.first()
+                instance.professional = professional
+                models.ServiceProfessional.objects.create(service=instance, professional=professional)
+                message += 'Mas fique tranquilo, já encontramos o profissional {} '\
+                           'para o serviço'.format(instance.professional)
+            else:
+                status = models.Service.CANCELED
+                message += 'Infelizmente seu serviço foi cancelado, pois não encontramos '\
+                           'um profissional para seu serviço'
+
+            instance.status = status
+            instance.save()
+
+            player_ids = [instance.client.onesignal]
+            PushNotification().send_players(player_ids, title, message)
+
+        return super().update(instance, validated_data)
 
 
 class ServiceSerializerRetrieve(serializers.ModelSerializer):

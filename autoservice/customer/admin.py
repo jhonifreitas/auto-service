@@ -16,10 +16,30 @@ class ReviewInline(admin.TabularInline):
         return False
 
 
+class ProfileCategoryInline(admin.TabularInline):
+
+    model = models.ProfileCategory
+    can_delete = False
+    readonly_fields = ['category', 'type_pay', 'price']
+
+    def has_add_permission(self, request):
+        return False
+
+
+class ServiceProfessionalInline(admin.TabularInline):
+
+    model = models.ServiceProfessional
+    can_delete = False
+    readonly_fields = ['professional', 'status', 'observation']
+
+    def has_add_permission(self, request):
+        return False
+
+
 class PayRequestInline(admin.TabularInline):
 
     model = models.PayRequest
-    # can_delete = False
+    can_delete = False
     fields = ['code', 'get_payment_link', 'payment_type', 'status']
     readonly_fields = ['code', 'get_payment_link', 'payment_type', 'status']
 
@@ -69,7 +89,7 @@ class ProfileAdmin(ImageWidgetAdmin):
 
     list_display = ['id', 'user', 'get_photo', 'city', 'types', 'expiration', 'created_at']
     list_display_links = ['id', 'user']
-    inlines = [PayRequestInline, GalleryInline, ReviewInline]
+    inlines = [ProfileCategoryInline, PayRequestInline, GalleryInline, ReviewInline]
     image_fields = ['photo']
 
     def get_photo(self, obj):
@@ -79,16 +99,9 @@ class ProfileAdmin(ImageWidgetAdmin):
     get_photo.short_description = 'Foto'
 
 
-@admin.register(models.ProfileCategory)
-class ProfileCategoryAdmin(admin.ModelAdmin):
-
-    list_display = ['id', 'profile', 'category', 'type_pay', 'price', 'created_at']
-    list_display_links = ['id']
-
-
 @admin.register(models.Service)
 class ServiceAdmin(admin.ModelAdmin):
 
     list_display = ['id', 'category', 'professional', 'client', 'date', 'time', 'status', 'created_at']
     list_display_links = ['id', 'category']
-    inlines = [ServiceImageInline]
+    inlines = [ServiceProfessionalInline, ServiceImageInline]

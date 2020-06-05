@@ -2,7 +2,9 @@ from auditlog.registry import auditlog
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save, pre_save, post_delete
 
+from autoservice.customer import signals
 from autoservice.storage import get_storage_path
 from autoservice.core.utils import Phone, CPF, ZipCode
 from autoservice.core.models import AbstractBaseModel, City, Category, TypePay
@@ -36,7 +38,7 @@ class Profile(AbstractBaseModel):
     ]
 
     user = models.OneToOneField(User, verbose_name='Usuário', on_delete=models.CASCADE, related_name='profile')
-    onesignal = models.CharField(verbose_name='Onesignal', max_length=255)
+    onesignal = models.CharField(verbose_name='Onesignal', max_length=255, null=True, blank=True)
     types = models.CharField(verbose_name='Tipo', max_length=255, choices=TYPES, default=COMMON)
     phone = models.CharField(verbose_name='Telefone', max_length=11)
     photo = models.ImageField(verbose_name='Foto', upload_to=get_profile_file_path, null=True, blank=True)
@@ -96,20 +98,20 @@ class Service(AbstractBaseModel):
         verbose_name = 'Serviço'
 
     DONE = 'done'
-    RECUSED = 'recused'
+    CANCELED = 'canceled'
     APPROVED = 'approved'
     REQUESTED = 'requested'
 
     STATUS = [
         (DONE, 'Realizado'),
-        (RECUSED, 'Recusado'),
         (APPROVED, 'Aprovado'),
+        (CANCELED, 'Cancelado'),
         (REQUESTED, 'Aguardando aprovação')
     ]
 
     category = models.ForeignKey(Category, verbose_name='Categoria', on_delete=models.CASCADE, related_name='services')
     professional = models.ForeignKey(Profile, verbose_name='Profissional', on_delete=models.CASCADE,
-                                     related_name='professional_services')
+                                     related_name='professional_services', null=True, blank=True)
     client = models.ForeignKey(Profile, verbose_name='Cliente', on_delete=models.CASCADE,
                                related_name='client_services')
 
@@ -125,12 +127,37 @@ class Service(AbstractBaseModel):
     date = models.DateField(verbose_name='Data')
     time = models.CharField(verbose_name='Horário', max_length=255)
     observation = models.TextField(verbose_name='Observação', null=True, blank=True)
-    status = models.CharField(verbose_name='Status', choices=STATUS, max_length=255)
+    status = models.CharField(verbose_name='Status', choices=STATUS, default=REQUESTED, max_length=255)
     text_cancel = models.TextField(verbose_name='Motivo Cancelamento', null=True, blank=True)
 
     @property
     def get_zipcode_formated(self):
         return ZipCode(self.zipcode).format()
+
+
+class ServiceProfessional(AbstractBaseModel):
+
+    class Meta:
+        verbose_name = 'Profissional'
+        verbose_name_plural = 'Profissionais'
+        ordering = ['-created_at']
+
+    RECUSED = 'recused'
+    APPROVED = 'approved'
+    REQUESTED = 'requested'
+
+    STATUS = [
+        (RECUSED, 'Recusado'),
+        (APPROVED, 'Aprovado'),
+        (REQUESTED, 'Aguardando aprovação')
+    ]
+
+    service = models.ForeignKey(Service, verbose_name='Serviço', on_delete=models.CASCADE,
+                                related_name='professionals')
+    professional = models.ForeignKey(Profile, verbose_name='Profissional', on_delete=models.CASCADE,
+                                     related_name='historic')
+    status = models.CharField(verbose_name='Status', choices=STATUS, default=REQUESTED, max_length=255)
+    observation = models.TextField(verbose_name='Observação', null=True, blank=True)
 
 
 class ServiceImage(AbstractBaseModel):
@@ -223,6 +250,10 @@ class PayRequest(AbstractBaseModel):
     payment_type = models.CharField(verbose_name='Tipo de Pagamento', choices=PAY_TYPES, max_length=255)
     status = models.CharField(verbose_name='Status', max_length=1, choices=STATUS, default=WAITING)
 
+
+pre_save.connect(signals.pre_save_service, sender=Service)
+post_save.connect(signals.post_save_service, sender=Service)
+post_delete.connect(signals.post_delete_service, sender=Service)
 
 auditlog.register(Review)
 auditlog.register(Profile)

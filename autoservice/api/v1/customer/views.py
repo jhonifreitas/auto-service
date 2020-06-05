@@ -230,6 +230,12 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
     def history(self, request):
         context = {'request': request}
-        queryset = self.get_queryset().filter(status=self.serializer_class.Meta.model.DONE)[:30]
+        queryset = self.get_queryset().filter(
+            Q(status=self.serializer_class.Meta.model.DONE) |
+            Q(status=self.serializer_class.Meta.model.CANCELED)
+        )[:30]
+        if self.request.user.profile.types == Profile.PROFESSIONAL:
+            queryset = self.get_queryset().filter(status=self.serializer_class.Meta.model.DONE)[:30]
+
         return Response(
             self.serializer_class_retrieve(queryset, many=True, context=context).data, status=status.HTTP_200_OK)
