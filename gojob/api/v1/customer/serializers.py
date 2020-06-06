@@ -8,7 +8,7 @@ from gojob.customer import models
 from gojob.core.utils import Phone, ZipCode, CPF
 from gojob.core.push_notification import PushNotification
 from gojob.api.v1.core.serializers import (CitySerializerRetrieve, CategorySerializerRetrieve,
-                                                 TypePaySerializerRetrieve)
+                                           TypePaySerializerRetrieve)
 
 
 class ProfileSerializer(serializers.ModelSerializer):

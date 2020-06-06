@@ -21,9 +21,11 @@ class ProfileViewSet(viewsets.ViewSet):
     def login(self, post_data):
         data = {
             'username': post_data.get('email'),
-            'password': post_data.get('password'),
-            'onesignal': post_data.get('onesignal'),
+            'password': post_data.get('password')
         }
+        onesignal = post_data.get('onesignal')
+        if onesignal:
+            data.update({'onesignal': onesignal})
         serializer = self.serializer_class_login(data=data)
         if serializer.is_valid():
             return Response(serializer.get_data(self.request), status=status.HTTP_200_OK)
