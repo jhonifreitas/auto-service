@@ -11,7 +11,6 @@ from gojob.api.v1.customer import views as customer_views
 app_name = 'api.v1'
 
 router = routers.SimpleRouter()
-router.register('review', customer_views.ReviewViewSet, basename='review')
 router.register('gallery', customer_views.GalleryViewSet, basename='gallery')
 router.register('service', customer_views.ServiceViewSet, basename='service')
 router.register('profile/category', customer_views.ProfileCategoryViewSet, basename='profile-category')
@@ -40,6 +39,11 @@ urlpatterns = [
     path('professional/', customer_views.ProfessionalViewSet.as_view({'get': 'list'}), name='professional-list'),
     path('professional/<int:pk>/', customer_views.ProfessionalViewSet.as_view({'get': 'retrieve'}),
          name='professional-detail'),
+
+    # AVALIATION
+    path('review/<int:pk>/', customer_views.ReviewViewSet.as_view({'get': 'list'}), name='review'),
+    path('review/create/', customer_views.ReviewViewSet.as_view({'post': 'create'}), name='review-create'),
+    path('review/pending/', customer_views.ReviewViewSet.as_view({'get': 'pending'}), name='review-pending'),
 
     # SERVICE
     path('service/requested/', customer_views.ServiceViewSet.as_view({'get': 'requested'}),

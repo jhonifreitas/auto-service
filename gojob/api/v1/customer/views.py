@@ -7,9 +7,9 @@ from rest_framework.response import Response
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
-from gojob.customer.models import Profile
 from gojob.api.v1.customer import serializers
 from gojob.api.v1.auth.serializers import LoginSerializer
+from gojob.customer.models import Profile, Service, Review
 
 
 class ProfileViewSet(viewsets.ViewSet):
@@ -128,13 +128,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class_retrieve = serializers.ReviewSerializerRetrieve
 
     def get_queryset(self):
-        return self.request.user.profile.review_from.all()
+        return self.serializer_class.Meta.model.objects.filter(to_profile=self.kwargs.get('pk'))
 
-    def list(self, request):
+    def list(self, request, pk):
         context = {'request': request}
-        queryset = self.request.user.profile.review_to.all()
         return Response(
-            self.serializer_class_retrieve(queryset, many=True, context=context).data, status=status.HTTP_200_OK)
+            self.serializer_class_retrieve(self.get_queryset(), many=True, context=context).data,
+            status=status.HTTP_200_OK)
 
     def create(self, request):
         data = request.data.copy()
@@ -146,15 +146,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
             return Response(self.serializer_class_retrieve(obj, context=context).data, status=status.HTTP_200_OK)
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, pk):
-        data = request.data.copy()
-        data.update({'from_profile': request.user.profile.pk})
-        serializer = self.serializer_class(self.get_object(), data=data)
-        if serializer.is_valid():
-            obj = serializer.save()
-            context = {'request': request}
-            return Response(self.serializer_class_retrieve(obj, context=context).data, status=status.HTTP_201_CREATED)
-        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    def pending(self, request):
+        context = {'request': request}
+        professionals = Service.objects.filter(
+            status=Service.DONE, client=request.user.profile).values_list('professional')
+        reviews = Review.objects.filter(
+            from_profile=request.user.profile, to_profile__id__in=professionals).values_list('to_profile')
+        queryset = Profile.objects.filter(id__in=professionals).exclude(id__in=reviews)
+        return Response(
+            serializers.ProfileSerializerRetrieve(queryset, many=True, context=context).data,
+            status=status.HTTP_200_OK)
 
 
 class GalleryViewSet(viewsets.ModelViewSet):

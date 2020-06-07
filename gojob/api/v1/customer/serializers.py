@@ -164,11 +164,12 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class ReviewSerializerRetrieve(serializers.ModelSerializer):
 
+    to_profile = ProfileSerializerRetrieve()
     from_profile = ProfileSerializerRetrieve()
 
     class Meta:
         model = models.Review
-        fields = ['id', 'from_profile', 'note', 'text']
+        fields = ['id', 'from_profile', 'to_profile', 'note', 'text']
 
 
 class GallerySerializer(serializers.ModelSerializer):
