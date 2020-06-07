@@ -186,7 +186,9 @@ class GallerySerializerRetrieve(serializers.ModelSerializer):
         fields = ['id', 'image']
 
 
-class ServiceImageSerializer(serializers.ModelSerializer):
+class ServiceImageSerializer(serializers.Serializer):
+
+    file = serializers.ImageField()
 
     class Meta:
         model = models.ServiceImage
