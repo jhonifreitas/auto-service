@@ -190,7 +190,7 @@ class ServiceImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.ServiceImage
-        fields = ['image']
+        fields = ['file']
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -226,7 +226,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
         models.ServiceProfessional.objects.create(service=instance, professional=instance.professional)
         for image in images:
-            models.ServiceImage.objects.create(service=instance, image=image.get('image'))
+            models.ServiceImage.objects.create(service=instance, image=image.get('file'))
         return instance
 
     def update(self, instance, validated_data):
