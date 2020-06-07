@@ -190,10 +190,6 @@ class ServiceImageSerializer(serializers.Serializer):
 
     file = serializers.ImageField()
 
-    class Meta:
-        model = models.ServiceImage
-        fields = ['file']
-
 
 class ServiceSerializer(serializers.ModelSerializer):
 
