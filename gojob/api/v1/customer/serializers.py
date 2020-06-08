@@ -191,6 +191,13 @@ class ServiceImageSerializer(serializers.Serializer):
     file = serializers.ImageField()
 
 
+class ServiceImageSerializerRetrieve(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.ServiceImage
+        fields = ['image']
+
+
 class ServiceSerializer(serializers.ModelSerializer):
 
     CHOICES = [
@@ -277,7 +284,7 @@ class ServiceSerializerRetrieve(serializers.ModelSerializer):
     client = ProfileSerializerRetrieve()
     zipcode = serializers.SerializerMethodField()
     city = CitySerializerRetrieve()
-    images = ServiceImageSerializer(many=True)
+    images = ServiceImageSerializerRetrieve(many=True)
     status = serializers.SerializerMethodField()
 
     class Meta:

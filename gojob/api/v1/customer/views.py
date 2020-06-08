@@ -164,9 +164,9 @@ class GalleryViewSet(viewsets.ModelViewSet):
     serializer_class_retrieve = serializers.GallerySerializerRetrieve
 
     def get_queryset(self):
-        return self.request.user.profile.gallery.all()
+        return self.serializer_class.Meta.model.objects.filter(profile=self.kwargs.get('pk'))
 
-    def list(self, request):
+    def list(self, request, pk):
         context = {'request': request}
         return Response(
             self.serializer_class_retrieve(self.get_queryset(), many=True, context=context).data,
